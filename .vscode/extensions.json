@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "donjayamanne.githistory",
+    "github.vscode-pull-request-github",
+    "github.copilot",
+    "vscjava.vscode-java-pack"
+  ],
+  "unwantedRecommendations": []
+}
+

@@ -1,0 +1,48 @@
+{
+  // Git настройки
+  "git.enabled": true,
+  "git.autofetch": true,
+  "git.autorefresh": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
+  "git.autoRepositoryDetection": true,
+  "git.detectSubmodules": true,
+  "git.ignoreLimitWarning": true,
+  "git.path": "git",
+  "git.scanRepositories": [
+    "${workspaceFolder}"
+  ],
+  
+  // Настройки для работы с файлами
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  
+  // Настройки редактора
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": false
+  },
+  
+  // Исключения из поиска
+  "search.exclude": {
+    "**/build": true,
+    "**/.gradle": true,
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.git": true
+  },
+  
+  // Исключения из файлового обозревателя
+  "files.exclude": {
+    "**/.git": false,
+    "**/.gradle": true,
+    "**/build": true
+  },
+  
+  // Настройки для Java (если используется)
+  "java.configuration.updateBuildConfiguration": "automatic"
+}
+
