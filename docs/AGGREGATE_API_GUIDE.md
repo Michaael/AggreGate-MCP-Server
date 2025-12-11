@@ -180,41 +180,57 @@
 
 **КРИТИЧЕСКИ ВАЖНО**: Привязки (bindings) связывают переменные и события модели с переменными и событиями устройств или других контекстов. Без привязок модель не будет получать данные от устройств.
 
-Привязки создаются через выполнение действия `addBinding` на модели контекста:
+Привязки создаются через переменную `bindings` модели контекста. Используйте правильный формат ссылок AggreGate:
+
+**Формат ссылок:**
+- `.:имя_переменной` - ссылка на переменную текущего контекста (используется в `target`)
+- `{контекст:переменная}` - ссылка на переменную другого контекста (используется в `expression`)
+
+**Пример привязки переменной через `aggregate_set_variable`:**
 
 ```json
 {
-  "tool": "aggregate_execute_action",
+  "tool": "aggregate_set_variable",
   "parameters": {
     "path": "users.admin.models.cluster",
-    "actionName": "addBinding",
-    "input": {
-      "sourcePath": "users.admin.devices.device1.status",
-      "targetVariable": "status",
-      "bindingType": "variable"
+    "name": "bindings",
+    "value": {
+      "recordCount": 1,
+      "format": {
+        "minRecords": 0,
+        "maxRecords": 2147483647,
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      },
+      "records": [{
+        "target": ".:device1Sine",
+        "expression": "{users.admin.devices.device1:sine}",
+        "onevent": true
+      }]
     }
   }
 }
 ```
 
-Пример привязки события:
+**Пример привязки события:**
 
 ```json
 {
-  "tool": "aggregate_execute_action",
-  "parameters": {
-    "path": "users.admin.models.cluster",
-    "actionName": "addBinding",
-    "input": {
-      "sourcePath": "users.admin.devices.device1.alarm",
-      "targetEvent": "alarm",
-      "bindingType": "event"
-    }
-  }
+  "records": [{
+    "target": ".:alarm",
+    "expression": "{users.admin.devices.device1:alarm}",
+    "onevent": true
+  }]
 }
 ```
 
-**Примечание**: Точный формат параметров действия `addBinding` может зависеть от версии AggreGate. Если стандартное действие не работает, используйте веб-интерфейс AggreGate для создания привязок вручную или изучите документацию по API действий.
+**Важно**: 
+- В поле `target` всегда указывайте `.:имя_переменной` (с префиксом `.:`)
+- В поле `expression` используйте формат `{контекст:переменная}` для ссылки на переменную другого контекста
+- Подробнее о формате ссылок см. [Формат ссылок в AggreGate](AGGREGATE_REFERENCES_FORMAT.md)
 
 ### Шаг 6: Создание устройств
 
@@ -306,7 +322,8 @@
 {"tool": "aggregate_create_device", "parameters": {"username": "admin", "deviceName": "device3", "description": "Устройство 3", "driverId": "com.tibbo.linkserver.plugin.device.virtual"}}
 
 // 7. Создание привязок после устройств
-{"tool": "aggregate_execute_action", "parameters": {"path": "users.admin.models.cluster", "actionName": "addBinding", "input": {...}}}
+// Используйте правильный формат: target: ".:имя_переменной", expression: "{контекст:переменная}"
+{"tool": "aggregate_set_variable", "parameters": {"path": "users.admin.models.cluster", "name": "bindings", "value": {"records": [{"target": ".:device1Sine", "expression": "{users.admin.devices.device1:sine}", "onevent": true}]}}}
 
 // 8. Создание виджетов и дашбордов
 {"tool": "aggregate_create_widget", "parameters": {...}}
@@ -315,6 +332,7 @@
 
 ## Дополнительные ресурсы
 
+- [Формат ссылок на контексты, переменные, события и функции](AGGREGATE_REFERENCES_FORMAT.md) - **ВАЖНО**: Правильный синтаксис ссылок в AggreGate
 - [Полное руководство по MCP серверу](mcp-server/COMPLETE_GUIDE.md)
 - [Лучшие практики AggreGate](manual/AGGREGATE_BEST_PRACTICES.md)
 - [Описание контекстов AggreGate](manual/AGGREGATE_CONTEXTS_DESCRIPTION.md)
