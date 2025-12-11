@@ -45,7 +45,7 @@ allprojects {
     }
 }
 
-project(":context-demo-web-app") {
+project(":modules:context-demo-web-app") {
     tasks.withType<JavaCompile> {
         onlyIf {
             project.hasProperty("web")
