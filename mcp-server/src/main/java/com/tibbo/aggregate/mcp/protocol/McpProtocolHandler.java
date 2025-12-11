@@ -116,7 +116,10 @@ public class McpProtocolHandler {
         } catch (McpException e) {
             sendError(request.getId(), e.getCode(), e.getMessage(), e.getData());
         } catch (Exception e) {
-            sendError(request.getId(), McpError.INTERNAL_ERROR, "Internal error: " + e.getMessage(), null);
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            com.tibbo.aggregate.mcp.util.ErrorHandler.ErrorDetails errorDetails = 
+                com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorDetails(e);
+            sendError(request.getId(), McpError.INTERNAL_ERROR, "Internal error: " + errorMessage, errorDetails);
         }
     }
     

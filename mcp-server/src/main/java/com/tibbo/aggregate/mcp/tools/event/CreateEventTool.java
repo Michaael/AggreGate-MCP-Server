@@ -321,16 +321,13 @@ public class CreateEventTool implements McpTool {
         } catch (McpException e) {
             throw e;
         } catch (Exception e) {
-            String errorMessage = e.getMessage();
-            if (errorMessage == null) {
-                errorMessage = e.getClass().getName();
-                if (e.getCause() != null && e.getCause().getMessage() != null) {
-                    errorMessage += ": " + e.getCause().getMessage();
-                }
-            }
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            com.tibbo.aggregate.mcp.util.ErrorHandler.ErrorDetails errorDetails = 
+                com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorDetails(e);
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                "Failed to create event: " + errorMessage
+                "Failed to create event: " + errorMessage,
+                errorDetails
             );
         }
     }

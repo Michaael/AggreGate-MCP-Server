@@ -162,9 +162,13 @@ public class AddDashboardElementTool implements McpTool {
         } catch (McpException e) {
             throw e;
         } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            com.tibbo.aggregate.mcp.util.ErrorHandler.ErrorDetails errorDetails = 
+                com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorDetails(e);
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                "Failed to add dashboard element: " + e.getMessage()
+                "Failed to add dashboard element: " + errorMessage,
+                errorDetails
             );
         }
     }

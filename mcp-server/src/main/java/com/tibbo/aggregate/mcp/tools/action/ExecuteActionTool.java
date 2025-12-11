@@ -17,6 +17,7 @@ import com.tibbo.aggregate.mcp.connection.ServerConnection;
 import com.tibbo.aggregate.mcp.protocol.McpException;
 import com.tibbo.aggregate.mcp.tools.McpTool;
 import com.tibbo.aggregate.mcp.util.DataTableConverter;
+import com.tibbo.aggregate.mcp.util.ErrorHandler;
 
 import static com.fasterxml.jackson.databind.node.JsonNodeFactory.instance;
 
@@ -179,16 +180,12 @@ public class ExecuteActionTool implements McpTool {
         } catch (McpException e) {
             throw e;
         } catch (Exception e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ContextException) {
-                throw new McpException(
-                    com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                    "Failed to execute action: " + cause.getMessage()
-                );
-            }
+            String errorMessage = ErrorHandler.extractErrorMessage(e);
+            ErrorHandler.ErrorDetails errorDetails = ErrorHandler.extractErrorDetails(e);
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                "Failed to execute action: " + e.getMessage()
+                "Failed to execute action: " + errorMessage,
+                errorDetails
             );
         }
     }
