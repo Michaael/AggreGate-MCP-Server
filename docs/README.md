@@ -15,6 +15,7 @@
 
 Руководства по работе с AggreGate SDK:
 
+- **[AGGREGATE_API_GUIDE.md](AGGREGATE_API_GUIDE.md)** - ⭐ **Руководство по правильной работе с API AggreGate через MCP сервер** (обязательно к прочтению!)
 - **[AGGREGATE_BEST_PRACTICES.md](manual/AGGREGATE_BEST_PRACTICES.md)** - Лучшие практики разработки с AggreGate
 - **[AGGREGATE_CONTEXTS_DESCRIPTION.md](manual/AGGREGATE_CONTEXTS_DESCRIPTION.md)** - Описание контекстов AggreGate
 - **aggregate_ru_5.70.15.chm** - Справочник по AggreGate (CHM формат, только для Windows)
@@ -26,8 +27,9 @@
 ## Быстрый старт
 
 1. Начните с [README.md MCP сервера](mcp-server/README.md) для установки и настройки
-2. Изучите [полное руководство](mcp-server/COMPLETE_GUIDE.md) для детальной информации
-3. Ознакомьтесь с [лучшими практиками](manual/AGGREGATE_BEST_PRACTICES.md) для разработки
+2. **Обязательно прочитайте [руководство по работе с API](AGGREGATE_API_GUIDE.md)** - это поможет избежать типичных ошибок
+3. Изучите [полное руководство](mcp-server/COMPLETE_GUIDE.md) для детальной информации
+4. Ознакомьтесь с [лучшими практиками](manual/AGGREGATE_BEST_PRACTICES.md) для разработки
 
 ## Структура проекта
 
