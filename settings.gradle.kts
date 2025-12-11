@@ -1,2 +1,15 @@
 rootProject.name = "AggreGate-SDK"
-include("aggregate-api", "widget-api", "demo-api", "demo-driver", "demo-plugin", "demo-agent", "context-demo-web-app", "mcp-server")
+include("mcp-server")
+include("modules:aggregate-api", "modules:widget-api", "modules:demo-api", "modules:demo-driver", "modules:demo-plugin", "modules:demo-agent", "modules:context-demo-web-app")
+include("modules:context-models")
+include("modules:client")
+
+project(":modules:aggregate-api").projectDir = file("modules/aggregate-api")
+project(":modules:widget-api").projectDir = file("modules/widget-api")
+project(":modules:demo-api").projectDir = file("modules/demo-api")
+project(":modules:demo-driver").projectDir = file("modules/demo-driver")
+project(":modules:demo-plugin").projectDir = file("modules/demo-plugin")
+project(":modules:demo-agent").projectDir = file("modules/demo-agent")
+project(":modules:context-demo-web-app").projectDir = file("modules/context-demo-web-app")
+project(":modules:context-models").projectDir = file("modules/context-models")
+project(":modules:client").projectDir = file("modules/client")
