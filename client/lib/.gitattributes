@@ -1,0 +1,1 @@
+*.{jar,zip,dll,so,jnilib} filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,1149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table>
+    <format maxRecords="1" minRecords="1">
+        <fields>
+            <field description="Minimal Record Count" name="minRecords" type="I">
+                <validators contentType="base64">HEweMCAyMTQ3NDgzNjQ3HQ==</validators>
+                <defaultValue>0</defaultValue>
+            </field>
+            <field description="Maximal Record Count"
+                extendableSelectionValues="true" name="maxRecords" type="I">
+                <validators contentType="base64">HEweMCAyMTQ3NDgzNjQ3HQ==</validators>
+                <selectionValues>
+                    <option description="Not limited">2147483647</option>
+                </selectionValues>
+                <defaultValue>2147483647</defaultValue>
+            </field>
+            <field description="Fields" name="fields" type="T">
+                <defaultValue>
+                    <table>
+                        <format maxRecords="2147483647" reorderable="true">
+                            <fields>
+                                <field hidden="true" name="oldname" type="S">
+                                    <defaultValue/>
+                                </field>
+                                <field description="Name"
+                                    keyfield="true" name="name" type="S">
+                                    <validators contentType="base64">HFIeXHcrXl5OYW1lIG1heSBjb250YWluIG9ubHkgTGF0aW4gbGV0dGVycywgZGlnaXRzLCBhbmQgdW5kZXJzY29yZXMd</validators>
+                                    <defaultValue/>
+                                </field>
+                                <field description="Type" name="type" type="S">
+                                    <selectionValues>
+                                    <option description="Integer">I</option>
+                                    <option description="String">S</option>
+                                    <option description="Boolean">B</option>
+                                    <option description="Long">L</option>
+                                    <option description="Float">F</option>
+                                    <option description="Double">E</option>
+                                    <option description="Date">D</option>
+                                    <option description="Data Table">T</option>
+                                    <option description="Color">C</option>
+                                    <option description="Data Block">A</option>
+                                    </selectionValues>
+                                    <defaultValue>I</defaultValue>
+                                </field>
+                                <field description="Description"
+                                    name="description" nullable="true" type="S">
+                                    <validators contentType="base64">HFIeW15ccHtDbnRybH1dKl5eRGVzY3JpcHRpb24gbWF5IGNvbnRhaW4gb25seSBwcmludGFibGUgY2hhcmFjdGVycx0=</validators>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                                <field description="Default"
+                                    name="defaultValue" nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                                <field description="Read-only"
+                                    name="readonly" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field description="Nullable"
+                                    name="nullable" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field description="Key" name="key" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field description="Selection Values"
+                                    name="selvals" type="T">
+                                    <defaultValue>
+                                    <table>
+                                    <format
+                                    maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field
+                                    description="Value"
+                                    keyfield="true"
+                                    name="value"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Description"
+                                    name="description" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    <validators contentType="base64">HEseHQ==</validators>
+                                    </format>
+                                    </table>
+                                    </defaultValue>
+                                </field>
+                                <field
+                                    description="Extendable Selection Values"
+                                    name="extselvals" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field advanced="true"
+                                    description="Hidden" name="hidden" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field advanced="true"
+                                    description="Inline" name="inline" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field advanced="true"
+                                    description="Encrypted"
+                                    name="encrypted" type="B">
+                                    <defaultValue>0</defaultValue>
+                                </field>
+                                <field description="Help"
+                                    editor="textarea" name="help"
+                                    nullable="true" type="S">
+                                    <validators contentType="base64">HFIeW15ccHtDbnRybH1dKl5eRGVzY3JpcHRpb24gbWF5IGNvbnRhaW4gb25seSBwcmludGFibGUgY2hhcmFjdGVycx0=</validators>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                                <field description="Editor/Viewer"
+                                    extendableSelectionValues="true"
+                                    name="editor" nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="List">list</option>
+                                    <option description="Date">date</option>
+                                    <option description="Time">time</option>
+                                    <option description="Bar">bar</option>
+                                    <option description="Bytes">bytes</option>
+                                    <option description="Format Mask">formatString</option>
+                                    <option description="Class Instance">instance</option>
+                                    <option description="Time Period">period</option>
+                                    <option description="Foreign Class Instance">foreignInstance</option>
+                                    <option description="Expression">expression</option>
+                                    <option description="Function Selector">functionselector</option>
+                                    <option description="Password">password</option>
+                                    <option description="Text Editor">text</option>
+                                    <option description="HTML">html</option>
+                                    <option description="Text Area">textarea</option>
+                                    <option description="Embedded Text Area">etextarea</option>
+                                    <option description="Context">context</option>
+                                    <option description="Context Mask">contextmask</option>
+                                    <option description="Font">font</option>
+                                    <option description="IP Address">ip</option>
+                                    <option description="Box">box</option>
+                                    <option description="Image">image</option>
+                                    <option description="Sound">sound</option>
+                                    <option description="Hex">hex</option>
+                                    <option description="Reference">reference</option>
+                                    <option description="Activator">activator</option>
+                                    <option description="Code Editor">code</option>
+                                    <option description="Spinner">spinner</option>
+                                    <option description="Event Level">eventLevel</option>
+                                    <option description="Date Range">dateRange</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                                <field description="Editor Options"
+                                    name="editorOptions" nullable="true" type="T">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                                <field description="Validators"
+                                    name="validators" nullable="true" type="T">
+                                    <defaultValue>
+                                    <table>
+                                    <format
+                                    maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field
+                                    description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    </table>
+                                    </defaultValue>
+                                </field>
+                                <field description="Group" name="group"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                </field>
+                            </fields>
+                            <bindings>
+                                <binding>
+                                    <reference>editorOptions</reference>
+                                    <expression>callFunction("utilities", "editorOptions", {type}, {editor}, {editorOptions})</expression>
+                                </binding>
+                                <binding>
+                                    <reference>editor#choices</reference>
+                                    <expression>{utilities:editors('{type}')}</expression>
+                                </binding>
+                            </bindings>
+                            <validators contentType="base64">HEseHQ==</validators>
+                        </format>
+                    </table>
+                </defaultValue>
+            </field>
+            <field description="Reorderable" name="reorderable" type="B">
+                <defaultValue>0</defaultValue>
+            </field>
+            <field description="Unresizable" name="unresizable" type="B">
+                <defaultValue>0</defaultValue>
+            </field>
+            <field description="Bindings" name="bindings" type="T">
+                <defaultValue>
+                    <table>
+                        <format maxRecords="2147483647" reorderable="true">
+                            <fields>
+                                <field description="Target"
+                                    name="target" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                </field>
+                                <field description="Expression"
+                                    editor="expression"
+                                    name="expression" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                </field>
+                            </fields>
+                        </format>
+                    </table>
+                </defaultValue>
+            </field>
+            <field description="Encoded" editor="textarea"
+                name="encoded" readonly="true" type="S">
+                <help>Encoded table format</help>
+                <defaultValue/>
+            </field>
+            <field description="Naming Expression" editor="expression"
+                name="namingExpression" nullable="true" type="S">
+                <defaultValue>
+                    <nullValue/>
+                </defaultValue>
+            </field>
+        </fields>
+    </format>
+    <records>
+        <record>
+            <value name="fields">
+                <table>
+                    <format maxRecords="2147483647" reorderable="true">
+                        <fields>
+                            <field hidden="true" name="oldname" type="S">
+                                <defaultValue/>
+                            </field>
+                            <field description="Name" keyfield="true"
+                                name="name" type="S">
+                                <validators contentType="base64">HFIeXHcrXl5OYW1lIG1heSBjb250YWluIG9ubHkgTGF0aW4gbGV0dGVycywgZGlnaXRzLCBhbmQgdW5kZXJzY29yZXMd</validators>
+                                <defaultValue/>
+                            </field>
+                            <field description="Type" name="type" type="S">
+                                <selectionValues>
+                                    <option description="Integer">I</option>
+                                    <option description="String">S</option>
+                                    <option description="Boolean">B</option>
+                                    <option description="Long">L</option>
+                                    <option description="Float">F</option>
+                                    <option description="Double">E</option>
+                                    <option description="Date">D</option>
+                                    <option description="Data Table">T</option>
+                                    <option description="Color">C</option>
+                                    <option description="Data Block">A</option>
+                                </selectionValues>
+                                <defaultValue>I</defaultValue>
+                            </field>
+                            <field description="Description"
+                                name="description" nullable="true" type="S">
+                                <validators contentType="base64">HFIeW15ccHtDbnRybH1dKl5eRGVzY3JpcHRpb24gbWF5IGNvbnRhaW4gb25seSBwcmludGFibGUgY2hhcmFjdGVycx0=</validators>
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                            <field description="Default"
+                                name="defaultValue" nullable="true" type="S">
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                            <field description="Read-only"
+                                name="readonly" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field description="Nullable"
+                                name="nullable" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field description="Key" name="key" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field description="Selection Values"
+                                name="selvals" type="T">
+                                <defaultValue>
+                                    <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field
+                                    description="Value"
+                                    keyfield="true"
+                                    name="value"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Description"
+                                    name="description" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    <validators contentType="base64">HEseHQ==</validators>
+                                    </format>
+                                    </table>
+                                </defaultValue>
+                            </field>
+                            <field
+                                description="Extendable Selection Values"
+                                name="extselvals" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field advanced="true" description="Hidden"
+                                name="hidden" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field advanced="true" description="Inline"
+                                name="inline" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field advanced="true"
+                                description="Encrypted" name="encrypted" type="B">
+                                <defaultValue>0</defaultValue>
+                            </field>
+                            <field description="Help" editor="textarea"
+                                name="help" nullable="true" type="S">
+                                <validators contentType="base64">HFIeW15ccHtDbnRybH1dKl5eRGVzY3JpcHRpb24gbWF5IGNvbnRhaW4gb25seSBwcmludGFibGUgY2hhcmFjdGVycx0=</validators>
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                            <field description="Editor/Viewer"
+                                extendableSelectionValues="true"
+                                name="editor" nullable="true" type="S">
+                                <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="List">list</option>
+                                    <option description="Date">date</option>
+                                    <option description="Time">time</option>
+                                    <option description="Bar">bar</option>
+                                    <option description="Bytes">bytes</option>
+                                    <option description="Format Mask">formatString</option>
+                                    <option description="Class Instance">instance</option>
+                                    <option description="Time Period">period</option>
+                                    <option description="Foreign Class Instance">foreignInstance</option>
+                                    <option description="Expression">expression</option>
+                                    <option description="Function Selector">functionselector</option>
+                                    <option description="Password">password</option>
+                                    <option description="Text Editor">text</option>
+                                    <option description="HTML">html</option>
+                                    <option description="Text Area">textarea</option>
+                                    <option description="Embedded Text Area">etextarea</option>
+                                    <option description="Context">context</option>
+                                    <option description="Context Mask">contextmask</option>
+                                    <option description="Font">font</option>
+                                    <option description="IP Address">ip</option>
+                                    <option description="Box">box</option>
+                                    <option description="Image">image</option>
+                                    <option description="Sound">sound</option>
+                                    <option description="Hex">hex</option>
+                                    <option description="Reference">reference</option>
+                                    <option description="Activator">activator</option>
+                                    <option description="Code Editor">code</option>
+                                    <option description="Spinner">spinner</option>
+                                    <option description="Event Level">eventLevel</option>
+                                    <option description="Date Range">dateRange</option>
+                                </selectionValues>
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                            <field description="Editor Options"
+                                name="editorOptions" nullable="true" type="T">
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                            <field description="Validators"
+                                name="validators" nullable="true" type="T">
+                                <defaultValue>
+                                    <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field
+                                    description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    </table>
+                                </defaultValue>
+                            </field>
+                            <field description="Group" name="group"
+                                nullable="true" type="S">
+                                <defaultValue>
+                                    <nullValue/>
+                                </defaultValue>
+                            </field>
+                        </fields>
+                        <bindings>
+                            <binding>
+                                <reference>editorOptions</reference>
+                                <expression>callFunction("utilities", "editorOptions", {type}, {editor}, {editorOptions})</expression>
+                            </binding>
+                            <binding>
+                                <reference>editor#choices</reference>
+                                <expression>{utilities:editors('{type}')}</expression>
+                            </binding>
+                        </bindings>
+                        <validators contentType="base64">HEseHQ==</validators>
+                    </format>
+                    <records>
+                        <record>
+                            <value name="oldname">name</value>
+                            <value name="name">name</value>
+                            <value name="type">S</value>
+                            <value name="description">Name</value>
+                            <value name="defaultValue"/>
+                            <value name="key">1</value>
+                            <value name="help">This field defines the function name.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="validators">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="validator">L</value>
+                                    <value name="options">1 50</value>
+                                    </record>
+                                    <record>
+                                    <value name="validator">R</value>
+                                    <value name="options">\w+^^Name may contain only Latin letters, digits, and underscores</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">description</value>
+                            <value name="name">description</value>
+                            <value name="type">S</value>
+                            <value name="description">Description</value>
+                            <value name="nullable">1</value>
+                            <value name="help">This field is used to set a human-readable function description.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="validators">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="validator">L</value>
+                                    <value name="options">1 100</value>
+                                    </record>
+                                    <record>
+                                    <value name="validator">R</value>
+                                    <value name="options">[^\p{Cntrl}]*^^Description may contain only printable characters</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">inputformat</value>
+                            <value name="name">inputformat</value>
+                            <value name="type">T</value>
+                            <value name="description">Input Format</value>
+                            <value contentType="base64" name="defaultValue">HE4ebWluUmVjb3Jkcx0cTh5tYXhSZWNvcmRzHRxOHmZpZWxkcx0cTh5yZW9yZGVyYWJsZR0cTh51bnJlc2l6YWJsZR0cTh5iaW5kaW5ncx0cTh5lbmNvZGVkHRxOHm5hbWluZ0V4cHJlc3Npb24dHFIeHDAdHDIxNDc0ODM2NDcdHBxOHm9sZG5hbWUdHE4ebmFtZR0cTh50eXBlHRxOHmRlc2NyaXB0aW9uHRxOHmRlZmF1bHRWYWx1ZR0cTh5yZWFkb25seR0cTh5udWxsYWJsZR0cTh5rZXkdHE4ec2VsdmFscx0cTh5leHRzZWx2YWxzHRxOHmhpZGRlbh0cTh5pbmxpbmUdHE4eZW5jcnlwdGVkHRxOHmhlbHAdHE4eZWRpdG9yHRxOHmVkaXRvck9wdGlvbnMdHE4edmFsaWRhdG9ycx0cTh5ncm91cB0dHDAdHDAdHBxOHnRhcmdldB0cTh5leHByZXNzaW9uHR0cHRwaHR0=</value>
+                            <value name="help">This field is used to define the function input format.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="validators">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">outputformat</value>
+                            <value name="name">outputformat</value>
+                            <value name="type">T</value>
+                            <value name="description">Output Format</value>
+                            <value contentType="base64" name="defaultValue">HE4ebWluUmVjb3Jkcx0cTh5tYXhSZWNvcmRzHRxOHmZpZWxkcx0cTh5yZW9yZGVyYWJsZR0cTh51bnJlc2l6YWJsZR0cTh5iaW5kaW5ncx0cTh5lbmNvZGVkHRxOHm5hbWluZ0V4cHJlc3Npb24dHFIeHDAdHDIxNDc0ODM2NDcdHBxOHm9sZG5hbWUdHE4ebmFtZR0cTh50eXBlHRxOHmRlc2NyaXB0aW9uHRxOHmRlZmF1bHRWYWx1ZR0cTh5yZWFkb25seR0cTh5udWxsYWJsZR0cTh5rZXkdHE4ec2VsdmFscx0cTh5leHRzZWx2YWxzHRxOHmhpZGRlbh0cTh5pbmxpbmUdHE4eZW5jcnlwdGVkHRxOHmhlbHAdHE4eZWRpdG9yHRxOHmVkaXRvck9wdGlvbnMdHE4edmFsaWRhdG9ycx0cTh5ncm91cB0dHDAdHDAdHBxOHnRhcmdldB0cTh5leHByZXNzaW9uHR0cHRwaHR0=</value>
+                            <value name="help">This field is used to define the function output format.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="validators">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Type"
+                                    name="validator"
+                                    nullable="true" type="S">
+                                    <selectionValues>
+                                    <option description="Default">
+                                    <nullValue/>
+                                    </option>
+                                    <option description="ID Validator">I</option>
+                                    <option description="Limits Validator">L</option>
+                                    <option description="Non-Null Validator">N</option>
+                                    <option description="Regex Validator">R</option>
+                                    <option description="Expression Validator">E</option>
+                                    </selectionValues>
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field description="Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">help</value>
+                            <value name="name">help</value>
+                            <value name="type">S</value>
+                            <value name="description">Help</value>
+                            <value name="nullable">1</value>
+                            <value name="help">This field is used to specify the detailed function description.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">group</value>
+                            <value name="name">group</value>
+                            <value name="type">S</value>
+                            <value name="description">Group</value>
+                            <value name="nullable">1</value>
+                            <value name="help">This field defines the current function group. It can be NULL if the function does not belong to any group.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">permissions</value>
+                            <value name="name">permissions</value>
+                            <value name="type">S</value>
+                            <value name="description">Permissions</value>
+                            <value name="defaultValue">operator</value>
+                            <value name="selvals">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Value"
+                                    keyfield="true"
+                                    name="value"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Description"
+                                    name="description" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    <validators contentType="base64">HEseHQ==</validators>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="value"/>
+                                    <value name="description">None</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">observer</value>
+                                    <value name="description">Observer</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">operator</value>
+                                    <value name="description">Operator</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">manager</value>
+                                    <value name="description">Manager</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">engineer</value>
+                                    <value name="description">Engineer</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">admin</value>
+                                    <value name="description">Administrator</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="help">This field defines the permission level in the model context (or the context the relative model is attached to, or the instantable model's instance context) required to execute the function.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">type</value>
+                            <value name="name">type</value>
+                            <value name="description">Type</value>
+                            <value name="defaultValue">1</value>
+                            <value name="selvals">
+                                <table>
+                                    <format maxRecords="2147483647" reorderable="true">
+                                    <fields>
+                                    <field description="Value"
+                                    keyfield="true"
+                                    name="value"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Description"
+                                    name="description" type="S">
+                                    <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    <validators contentType="base64">HEseHQ==</validators>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="value">0</value>
+                                    <value name="description">Java Code</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">1</value>
+                                    <value name="description">Expression</value>
+                                    </record>
+                                    <record>
+                                    <value name="value">2</value>
+                                    <value name="description">Query</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                            <value name="help">This field defines the function implementation type.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">implementation</value>
+                            <value name="name">implementation</value>
+                            <value name="type">S</value>
+                            <value name="description">Implementation</value>
+                            <value name="defaultValue">import com.tibbo.aggregate.common.context.*;
+import com.tibbo.aggregate.common.datatable.*;
+import com.tibbo.aggregate.common.server.*;
+
+import com.tibbo.linkserver.*;
+import com.tibbo.linkserver.context.*;
+
+public class %ScriptClassNamePattern% implements FunctionImplementation
+{
+  public DataTable execute(Context con, FunctionDefinition def, CallerController caller, RequestController request, DataTable parameters) throws ContextException
+  {
+    return null;
+  }
+}
+</value>
+                            <value name="help">This field is available if the Type field is set to Java Code. The Java class source code implements the function body, i.e. does the job that the function is supposed to do.</value>
+                            <value name="editor">code</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="options">java</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">expression</value>
+                            <value name="name">expression</value>
+                            <value name="type">S</value>
+                            <value name="description">Expression</value>
+                            <value name="defaultValue"/>
+                            <value name="help">This field is available if the Type field is set to Expression. The expression will be evaluated during the function execution.</value>
+                            <value name="editor">expression</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Default Context"
+                                    name="context"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Default Table"
+                                    name="table"
+                                    nullable="true" type="T">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="References"
+                                    name="references"
+                                    nullable="true" type="T">
+                                    <defaultValue>
+                                    <table>
+                                    <format maxRecords="2147483647">
+                                    <fields>
+                                    <field
+                                    description="Reference"
+                                    name="reference" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    <field
+                                    description="Description"
+                                    name="description" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    </table>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Expected Result"
+                                    name="expectedResult"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Default Context Description"
+                                    name="contextDescription"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    <field
+                                    description="Default Table Description"
+                                    name="tableDescription"
+                                    nullable="true" type="S">
+                                    <defaultValue>
+                                    <nullValue/>
+                                    </defaultValue>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">query</value>
+                            <value name="name">query</value>
+                            <value name="type">S</value>
+                            <value name="description">Query</value>
+                            <value name="defaultValue"/>
+                            <value name="help">This field is available if the Type field is set to Query. The query will be evaluated during the function execution.</value>
+                            <value name="editor">text</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record>
+                                    <value name="options">sql</value>
+                                    </record>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">concurrent</value>
+                            <value name="name">concurrent</value>
+                            <value name="type">B</value>
+                            <value name="description">Concurrent</value>
+                            <value name="defaultValue">1</value>
+                            <value name="help">Defines whether multiple calls of this function can work concurrently.</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                        <record>
+                            <value name="oldname">plugin</value>
+                            <value name="name">plugin</value>
+                            <value name="type">S</value>
+                            <value name="description">Plugin</value>
+                            <value name="nullable">1</value>
+                            <value name="editorOptions">
+                                <table>
+                                    <format maxRecords="1" minRecords="1">
+                                    <fields>
+                                    <field
+                                    description="Editor Options"
+                                    name="options" type="S">
+                                    <defaultValue/>
+                                    </field>
+                                    </fields>
+                                    </format>
+                                    <records>
+                                    <record/>
+                                    </records>
+                                </table>
+                            </value>
+                        </record>
+                    </records>
+                </table>
+            </value>
+            <value name="reorderable">1</value>
+            <value name="bindings">
+                <table>
+                    <format maxRecords="2147483647" reorderable="true">
+                        <fields>
+                            <field description="Target" name="target" type="S">
+                                <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                <defaultValue/>
+                            </field>
+                            <field description="Expression"
+                                editor="expression" name="expression" type="S">
+                                <validators contentType="base64">HEweMSAyMTQ3NDgzNjQ3HQ==</validators>
+                                <defaultValue/>
+                            </field>
+                        </fields>
+                    </format>
+                    <records>
+                        <record>
+                            <value name="target">implementation#enabled</value>
+                            <value name="expression">{type} == 0</value>
+                        </record>
+                        <record>
+                            <value name="target">expression#enabled</value>
+                            <value name="expression">{type} == 1</value>
+                        </record>
+                        <record>
+                            <value name="target">query#enabled</value>
+                            <value name="expression">{type} == 2</value>
+                        </record>
+                        <record>
+                            <value name="target">plugin#enabled</value>
+                            <value name="expression">{type} == 0</value>
+                        </record>
+                        <record>
+                            <value name="target">expression#options</value>
+                            <value name="expression">expressionEditorOptions({childInfo$type[0]} == 0 ? {childInfo$defaultContext[0]} : {.:})</value>
+                        </record>
+                    </records>
+                </table>
+            </value>
+            <value name="encoded">&lt;&lt;name&gt;&lt;S&gt;&lt;F=K&gt;&lt;A=&gt;&lt;D=Name&gt;&lt;H=This field defines the function name.&gt;&lt;V=&lt;L=1 50&gt;&lt;R=\w+^^Name may contain only Latin letters, digits, and underscores&gt;&gt;&gt;&lt;&lt;description&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Description&gt;&lt;H=This field is used to set a human-readable function description.&gt;&lt;V=&lt;L=1 100&gt;&lt;R=[^\p{Cntrl}]*^^Description may contain only printable characters&gt;&gt;&gt;&lt;&lt;inputformat&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;minRecords&gt;&lt;I&gt;&lt;A=0&gt;&lt;D=Minimal Record Count&gt;&lt;V=&lt;L=0 2147483647&gt;&gt;&gt;&lt;&lt;maxRecords&gt;&lt;I&gt;&lt;F=E&gt;&lt;A=2147483647&gt;&lt;D=Maximal Record Count&gt;&lt;S=&lt;Not limited=2147483647&gt;&gt;&lt;V=&lt;L=0 2147483647&gt;&gt;&gt;&lt;&lt;fields&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;oldname&gt;&lt;S&gt;&lt;F=H&gt;&lt;A=&gt;&gt;&lt;&lt;name&gt;&lt;S&gt;&lt;F=K&gt;&lt;A=&gt;&lt;D=Name&gt;&lt;V=&lt;R=\w+^^Name may contain only Latin letters, digits, and underscores&gt;&gt;&gt;&lt;&lt;type&gt;&lt;S&gt;&lt;A=I&gt;&lt;D=Type&gt;&lt;S=&lt;Integer=I&gt;&lt;String=S&gt;&lt;Boolean=B&gt;&lt;Long=L&gt;&lt;Float=F&gt;&lt;Double=E&gt;&lt;Date=D&gt;&lt;Data Table=T&gt;&lt;Color=C&gt;&lt;Data Block=A&gt;&gt;&gt;&lt;&lt;description&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Description&gt;&lt;V=&lt;R=[^\p{Cntrl}]*^^Description may contain only printable characters&gt;&gt;&gt;&lt;&lt;defaultValue&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Default&gt;&gt;&lt;&lt;readonly&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Read-only&gt;&gt;&lt;&lt;nullable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Nullable&gt;&gt;&lt;&lt;key&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Key&gt;&gt;&lt;&lt;selvals&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;value&gt;&lt;S&gt;&lt;F=NK&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Value&gt;&gt;&lt;&lt;description&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Description&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&gt;&lt;V=&lt;K=&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Selection Values&gt;&gt;&lt;&lt;extselvals&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Extendable Selection Values&gt;&gt;&lt;&lt;hidden&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Hidden&gt;&gt;&lt;&lt;inline&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Inline&gt;&gt;&lt;&lt;encrypted&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Encrypted&gt;&gt;&lt;&lt;help&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Help&gt;&lt;V=&lt;R=[^\p{Cntrl}]*^^Description may contain only printable characters&gt;&gt;&lt;E=textarea&gt;&gt;&lt;&lt;editor&gt;&lt;S&gt;&lt;F=NE&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Editor/Viewer&gt;&lt;S=&lt;Default=&lt;NULL&gt;&gt;&lt;List=list&gt;&lt;Date=date&gt;&lt;Time=time&gt;&lt;Bar=bar&gt;&lt;Bytes=bytes&gt;&lt;Format Mask=formatString&gt;&lt;Class Instance=instance&gt;&lt;Time Period=period&gt;&lt;Foreign Class Instance=foreignInstance&gt;&lt;Expression=expression&gt;&lt;Function Selector=functionselector&gt;&lt;Password=password&gt;&lt;Text Editor=text&gt;&lt;HTML=html&gt;&lt;Text Area=textarea&gt;&lt;Embedded Text Area=etextarea&gt;&lt;Context=context&gt;&lt;Context Mask=contextmask&gt;&lt;Font=font&gt;&lt;IP Address=ip&gt;&lt;Box=box&gt;&lt;Image=image&gt;&lt;Sound=sound&gt;&lt;Hex=hex&gt;&lt;Reference=reference&gt;&lt;Activator=activator&gt;&lt;Code Editor=code&gt;&lt;Spinner=spinner&gt;&lt;Event Level=eventLevel&gt;&lt;Date Range=dateRange&gt;&gt;&gt;&lt;&lt;editorOptions&gt;&lt;T&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Editor Options&gt;&gt;&lt;&lt;validators&gt;&lt;T&gt;&lt;F=N&gt;&lt;A=&lt;F=&lt;&lt;validator&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Type&gt;&lt;S=&lt;Default=&lt;NULL&gt;&gt;&lt;ID Validator=I&gt;&lt;Limits Validator=L&gt;&lt;Non-Null Validator=N&gt;&lt;Regex Validator=R&gt;&lt;Expression Validator=E&gt;&gt;&gt;&lt;&lt;options&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Options&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Validators&gt;&gt;&lt;&lt;group&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Group&gt;&gt;&lt;V=&lt;K=&gt;&gt;&lt;B=&lt;editorOptions=callFunction("utilities", "editorOptions", {type}, {editor}, {editorOptions})&gt;&lt;editor#choices={utilities:editors('{type}')}&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Fields&gt;&gt;&lt;&lt;reorderable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Reorderable&gt;&gt;&lt;&lt;unresizable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Unresizable&gt;&gt;&lt;&lt;bindings&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;target&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Target&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&gt;&lt;&lt;expression&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Expression&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&lt;E=expression&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Bindings&gt;&gt;&lt;&lt;encoded&gt;&lt;S&gt;&lt;F=R&gt;&lt;A=&gt;&lt;D=Encoded&gt;&lt;H=Encoded table format&gt;&lt;E=textarea&gt;&gt;&lt;&lt;namingExpression&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Naming Expression&gt;&lt;E=expression&gt;&gt;&lt;M=1&gt;&lt;X=1&gt;&lt;V=&lt;E=e21pblJlY29yZHN9IDw9IHttYXhSZWNvcmRzfSA/IG51bGwgOiAnTWF4aW1hbCBudW1iZXIgb2YgcmVjb3JkcyBjYW5ub3QgYmUgbGVzcyB0aGVuIG1pbmltYWwn&gt;&gt;&lt;N=print({fields}, '{name}', ', ')&gt;&gt;&lt;R=&lt;0&gt;&lt;2147483647&gt;&lt;&gt;&lt;0&gt;&lt;0&gt;&lt;&gt;&lt;&gt;&lt;&lt;NULL&gt;&gt;&gt;&gt;&lt;D=Input Format&gt;&lt;H=This field is used to define the function input format.&gt;&gt;&lt;&lt;outputformat&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;minRecords&gt;&lt;I&gt;&lt;A=0&gt;&lt;D=Minimal Record Count&gt;&lt;V=&lt;L=0 2147483647&gt;&gt;&gt;&lt;&lt;maxRecords&gt;&lt;I&gt;&lt;F=E&gt;&lt;A=2147483647&gt;&lt;D=Maximal Record Count&gt;&lt;S=&lt;Not limited=2147483647&gt;&gt;&lt;V=&lt;L=0 2147483647&gt;&gt;&gt;&lt;&lt;fields&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;oldname&gt;&lt;S&gt;&lt;F=H&gt;&lt;A=&gt;&gt;&lt;&lt;name&gt;&lt;S&gt;&lt;F=K&gt;&lt;A=&gt;&lt;D=Name&gt;&lt;V=&lt;R=\w+^^Name may contain only Latin letters, digits, and underscores&gt;&gt;&gt;&lt;&lt;type&gt;&lt;S&gt;&lt;A=I&gt;&lt;D=Type&gt;&lt;S=&lt;Integer=I&gt;&lt;String=S&gt;&lt;Boolean=B&gt;&lt;Long=L&gt;&lt;Float=F&gt;&lt;Double=E&gt;&lt;Date=D&gt;&lt;Data Table=T&gt;&lt;Color=C&gt;&lt;Data Block=A&gt;&gt;&gt;&lt;&lt;description&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Description&gt;&lt;V=&lt;R=[^\p{Cntrl}]*^^Description may contain only printable characters&gt;&gt;&gt;&lt;&lt;defaultValue&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Default&gt;&gt;&lt;&lt;readonly&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Read-only&gt;&gt;&lt;&lt;nullable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Nullable&gt;&gt;&lt;&lt;key&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Key&gt;&gt;&lt;&lt;selvals&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;value&gt;&lt;S&gt;&lt;F=NK&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Value&gt;&gt;&lt;&lt;description&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Description&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&gt;&lt;V=&lt;K=&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Selection Values&gt;&gt;&lt;&lt;extselvals&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Extendable Selection Values&gt;&gt;&lt;&lt;hidden&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Hidden&gt;&gt;&lt;&lt;inline&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Inline&gt;&gt;&lt;&lt;encrypted&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=0&gt;&lt;D=Encrypted&gt;&gt;&lt;&lt;help&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Help&gt;&lt;V=&lt;R=[^\p{Cntrl}]*^^Description may contain only printable characters&gt;&gt;&lt;E=textarea&gt;&gt;&lt;&lt;editor&gt;&lt;S&gt;&lt;F=NE&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Editor/Viewer&gt;&lt;S=&lt;Default=&lt;NULL&gt;&gt;&lt;List=list&gt;&lt;Date=date&gt;&lt;Time=time&gt;&lt;Bar=bar&gt;&lt;Bytes=bytes&gt;&lt;Format Mask=formatString&gt;&lt;Class Instance=instance&gt;&lt;Time Period=period&gt;&lt;Foreign Class Instance=foreignInstance&gt;&lt;Expression=expression&gt;&lt;Function Selector=functionselector&gt;&lt;Password=password&gt;&lt;Text Editor=text&gt;&lt;HTML=html&gt;&lt;Text Area=textarea&gt;&lt;Embedded Text Area=etextarea&gt;&lt;Context=context&gt;&lt;Context Mask=contextmask&gt;&lt;Font=font&gt;&lt;IP Address=ip&gt;&lt;Box=box&gt;&lt;Image=image&gt;&lt;Sound=sound&gt;&lt;Hex=hex&gt;&lt;Reference=reference&gt;&lt;Activator=activator&gt;&lt;Code Editor=code&gt;&lt;Spinner=spinner&gt;&lt;Event Level=eventLevel&gt;&lt;Date Range=dateRange&gt;&gt;&gt;&lt;&lt;editorOptions&gt;&lt;T&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Editor Options&gt;&gt;&lt;&lt;validators&gt;&lt;T&gt;&lt;F=N&gt;&lt;A=&lt;F=&lt;&lt;validator&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Type&gt;&lt;S=&lt;Default=&lt;NULL&gt;&gt;&lt;ID Validator=I&gt;&lt;Limits Validator=L&gt;&lt;Non-Null Validator=N&gt;&lt;Regex Validator=R&gt;&lt;Expression Validator=E&gt;&gt;&gt;&lt;&lt;options&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Options&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Validators&gt;&gt;&lt;&lt;group&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Group&gt;&gt;&lt;V=&lt;K=&gt;&gt;&lt;B=&lt;editorOptions=callFunction("utilities", "editorOptions", {type}, {editor}, {editorOptions})&gt;&lt;editor#choices={utilities:editors('{type}')}&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Fields&gt;&gt;&lt;&lt;reorderable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Reorderable&gt;&gt;&lt;&lt;unresizable&gt;&lt;B&gt;&lt;A=0&gt;&lt;D=Unresizable&gt;&gt;&lt;&lt;bindings&gt;&lt;T&gt;&lt;A=&lt;F=&lt;&lt;target&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Target&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&gt;&lt;&lt;expression&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Expression&gt;&lt;V=&lt;L=1 2147483647&gt;&gt;&lt;E=expression&gt;&gt;&lt;F=R&gt;&gt;&gt;&lt;D=Bindings&gt;&gt;&lt;&lt;encoded&gt;&lt;S&gt;&lt;F=R&gt;&lt;A=&gt;&lt;D=Encoded&gt;&lt;H=Encoded table format&gt;&lt;E=textarea&gt;&gt;&lt;&lt;namingExpression&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Naming Expression&gt;&lt;E=expression&gt;&gt;&lt;M=1&gt;&lt;X=1&gt;&lt;V=&lt;E=e21pblJlY29yZHN9IDw9IHttYXhSZWNvcmRzfSA/IG51bGwgOiAnTWF4aW1hbCBudW1iZXIgb2YgcmVjb3JkcyBjYW5ub3QgYmUgbGVzcyB0aGVuIG1pbmltYWwn&gt;&gt;&lt;N=print({fields}, '{name}', ', ')&gt;&gt;&lt;R=&lt;0&gt;&lt;2147483647&gt;&lt;&gt;&lt;0&gt;&lt;0&gt;&lt;&gt;&lt;&gt;&lt;&lt;NULL&gt;&gt;&gt;&gt;&lt;D=Output Format&gt;&lt;H=This field is used to define the function output format.&gt;&gt;&lt;&lt;help&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Help&gt;&lt;H=This field is used to specify the detailed function description.&gt;&gt;&lt;&lt;group&gt;&lt;S&gt;&lt;F=N&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Group&gt;&lt;H=This field defines the current function group. It can be NULL if the function does not belong to any group.&gt;&gt;&lt;&lt;permissions&gt;&lt;S&gt;&lt;A=operator&gt;&lt;D=Permissions&gt;&lt;H=This field defines the permission level in the model context (or the context the relative model is attached to, or the instantable model's instance context) required to execute the function.&gt;&lt;S=&lt;None=&gt;&lt;Observer=observer&gt;&lt;Operator=operator&gt;&lt;Manager=manager&gt;&lt;Engineer=engineer&gt;&lt;Administrator=admin&gt;&gt;&gt;&lt;&lt;type&gt;&lt;I&gt;&lt;A=1&gt;&lt;D=Type&gt;&lt;H=This field defines the function implementation type.&gt;&lt;S=&lt;Java Code=0&gt;&lt;Expression=1&gt;&lt;Query=2&gt;&gt;&gt;&lt;&lt;implementation&gt;&lt;S&gt;&lt;A=import com.tibbo.aggregate.common.context.*;
+import com.tibbo.aggregate.common.datatable.*;
+import com.tibbo.aggregate.common.server.*;
+
+import com.tibbo.linkserver.*;
+import com.tibbo.linkserver.context.*;
+
+public class %%ScriptClassNamePattern%% implements FunctionImplementation
+{
+  public DataTable execute(Context con, FunctionDefinition def, CallerController caller, RequestController request, DataTable parameters) throws ContextException
+  {
+    return null;
+  }
+}
+&gt;&lt;D=Implementation&gt;&lt;H=This field is available if the Type field is set to Java Code. The Java class source code implements the function body, i.e. does the job that the function is supposed to do.&gt;&lt;E=code&gt;&lt;O=java&gt;&gt;&lt;&lt;expression&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Expression&gt;&lt;H=This field is available if the Type field is set to Expression. The expression will be evaluated during the function execution.&gt;&lt;E=expression&gt;&gt;&lt;&lt;query&gt;&lt;S&gt;&lt;A=&gt;&lt;D=Query&gt;&lt;H=This field is available if the Type field is set to Query. The query will be evaluated during the function execution.&gt;&lt;E=text&gt;&lt;O=sql&gt;&gt;&lt;&lt;concurrent&gt;&lt;B&gt;&lt;F=A&gt;&lt;A=1&gt;&lt;D=Concurrent&gt;&lt;H=Defines whether multiple calls of this function can work concurrently.&gt;&gt;&lt;&lt;plugin&gt;&lt;S&gt;&lt;F=NA&gt;&lt;A=&lt;NULL&gt;&gt;&lt;D=Plugin&gt;&gt;&lt;V=&lt;K=&gt;&gt;&lt;B=&lt;implementation#enabled={type} == 0&gt;&lt;expression#enabled={type} == 1&gt;&lt;query#enabled={type} == 2&gt;&lt;plugin#enabled={type} == 0&gt;&lt;expression#options=expressionEditorOptions({childInfo$type[0]} == 0 ? {childInfo$defaultContext[0]} : {.:})&gt;&gt;&lt;F=R&gt;</value>
+        </record>
+    </records>
+</table>

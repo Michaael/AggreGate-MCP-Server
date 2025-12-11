@@ -1,0 +1,136 @@
+<macro>
+  <fileName>1_newserver.xml</fileName>
+  <steps>
+    <operation>
+      <invokerContext>servers</invokerContext>
+      <operationName>newServer</operationName>
+      <steps>
+        <editTable>
+          <steps>
+            <showDescriptions>
+              <title>Edit Connection Parameters</title>
+              <descriptions>
+                <html>
+                  <body>&lt;p&gt;The &lt;b&gt;Server Connection Parameters&lt;/b&gt; should be displayed now:
+&lt;br&gt;&lt;br&gt;&lt;img src=&quot;newserver/dialog_server_account.jpg&quot;/&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;
+                  </body>
+                  <onFinish>false</onFinish>
+                </html>
+              </descriptions>
+              <concurrency>parallel</concurrency>
+            </showDescriptions>
+            <editTableCell>
+              <field>address</field>
+              <value>localhost</value>
+              <row>0</row>
+              <undefinedValue>false</undefinedValue>
+              <title>Edit Connection Parameters</title>
+              <descriptions>
+                <html>
+                  <body>A running instance of $R{productServer} is detected on your local machine. Type &lt;b&gt;localhost&lt;/b&gt; into the &lt;b&gt;Address&lt;/b&gt; field to connect to this server. Leave the &lt;b&gt;Port number&lt;/b&gt; field at its default setting (6460) unless you specifically know the port was changed.
+                  </body>
+                  <onFinish>false</onFinish>
+                </html>
+              </descriptions>
+              <enabled>{test()}</enabled>
+              <concurrency>parallel</concurrency>
+            </editTableCell>
+            <editTableCell>
+              <field>address</field>
+              <value></value>
+              <row>0</row>
+              <undefinedValue>true</undefinedValue>
+              <title>Edit Connection Parameters</title>
+              <descriptions>
+                <html>
+                  <body>&lt;p&gt;An $R{productServer} was not detected on your local machine. This means it was either not installed at all (in which case you should install it, and then continue with the tutorial), or it was installed on a different computer on your network.&lt;/p&gt;
+&lt;p&gt;If the latter is the case, you should obtain the IP address of the computer on which $R{productServer} was installed and enter it into the &lt;b&gt;Address&lt;/b&gt; field to connect to this server. Assuming the address is &lt;b&gt;192.168.1.88&lt;/b&gt;, the dialog would look something like this:&lt;/p&gt;
+&lt;br&gt;&lt;br&gt;&lt;img src=&quot;newserver/dialog_server_remoteaccount.png&quot;/&gt;&lt;br&gt;&lt;br&gt;
+&lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; The address shown above is &lt;b&gt;not&lt;/b&gt; the actual address in your network! You have to find this address for yourself.</body>
+                  <onFinish>false</onFinish>
+                </html>
+              </descriptions>
+              <enabled>! {test()}</enabled>
+              <concurrency>parallel</concurrency>
+            </editTableCell>
+            <editTableCell>
+              <field>username</field>
+              <value></value>
+              <row>0</row>
+              <undefinedValue>true</undefinedValue>
+              <descriptions>
+                <html>
+                  <body>Enter your username into the &lt;b&gt;Username&lt;/b&gt; field. If you don&apos;t know what it is, try the default, &lt;b&gt;admin&lt;/b&gt;.</body>
+                  <onFinish>false</onFinish>
+                </html>
+              </descriptions>
+              <concurrency>parallel</concurrency>
+            </editTableCell>
+            <editTableCell>
+              <field>password</field>
+              <value></value>
+              <row>0</row>
+              <undefinedValue>true</undefinedValue>
+              <title>Edit Connection Parameters</title>
+              <descriptions>
+                <html>
+                  <body>Enter your password into the &lt;b&gt;Password&lt;/b&gt; field. If you don&apos;t know what it is, try the default, &lt;b&gt;admin&lt;/b&gt;.</body>
+                  <onFinish>false</onFinish>
+                </html>
+              </descriptions>
+              <concurrency>parallel</concurrency>
+            </editTableCell>
+          </steps>
+          <title>Edit Connection Parameters</title>
+          <descriptions>
+            <html>
+              <body>Click the &lt;B&gt;OK&lt;/B&gt; button.</body>
+              <onFinish>true</onFinish>
+            </html>
+          </descriptions>
+        </editTable>
+      </steps>
+      <title>New Server Connection</title>
+      <descriptions>
+        <html>
+          <body>Processing request...</body>
+          <onFinish>true</onFinish>
+        </html>
+        <html>
+          <body>&lt;ul&gt;
+&lt;li&gt;Look at the left side of the Client window. You should see the &lt;b&gt;System Tree&lt;/b&gt;:
+
+&lt;br&gt;&lt;br&gt;&lt;img src=&quot;newserver/tree_system.jpg&quot;/&gt;&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Right-click&lt;/b&gt; the &lt;b&gt;Servers&lt;/b&gt; node. A context menu should appear.&lt;/li&gt;
+&lt;li&gt;In this context menu, find &lt;b&gt;New Server Connection&lt;/b&gt;. &lt;b&gt;Click&lt;/b&gt; it.
+&lt;br&gt;&lt;br&gt;&lt;img src=&quot;newserver/context_servers.jpg&quot;/&gt;&lt;br&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</body>
+          <onFinish>false</onFinish>
+        </html>
+      </descriptions>
+    </operation>
+  </steps>
+  <title>Create New Server Connection</title>
+  <descriptions>
+    <html>
+      <body>&lt;p&gt;At the moment, you are in the &lt;b&gt;$R{productClient}&lt;/b&gt;. But to make $R{product} work, you need an &lt;b&gt;$R{productServer}&lt;/b&gt; - the core of the system.&lt;/p&gt;
+&lt;br&gt;
+&lt;p&gt;This tutorial will show you how to communicate with an $R{productServer}. We assume you already have such a server installed (either on this computer, or on some computer you can access via your network). If this is the case, please proceed.&lt;/p&gt;
+&lt;br&gt;
+&lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; This is an interactive tutorial. It&apos;s going to be watching over your shoulder as you work, and provide the next step as you follow it. There&apos;s no need to click next (at the bottom of this window) thoughout the tutorial.&lt;/p&gt;
+&lt;br&gt;
+&lt;p&gt;  And now, having said that... please click next to get started!&lt;/p&gt;</body>
+      <onFinish>false</onFinish>
+    </html>
+    <html>
+      <body>&lt;p&gt;Assuming you did things correctly, your tree should now look like this:&lt;/p&gt;
+&lt;br&gt;&lt;br&gt;&lt;img src=&quot;newserver/tree_ls_connected.png&quot;/&gt;&lt;br&gt;&lt;br&gt;
+&lt;p&gt;If this is what you see, &lt;b&gt;well done!&lt;/b&gt; You have successfully established a connection with your $R{productServer}.&lt;/p&gt;
+&lt;p&gt;You should now proceed to &lt;b&gt;Guide 2:&lt;/b&gt; &lt;a href=&quot;2_newuser.xml&quot;&gt;Create a User Account&lt;/a&gt;.&lt;/p&gt;
+&lt;br&gt;
+&lt;p&gt;&lt;a href=&quot;index.html&quot;&gt;Index&lt;/a&gt;&lt;/p&gt;</body>
+      <onFinish>true</onFinish>
+    </html>
+  </descriptions>
+</macro>

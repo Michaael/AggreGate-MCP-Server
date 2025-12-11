@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "aggregate": {
+      "command": "java",
+      "args": [
+        "-jar",
+        "path/to/aggregate-mcp-server-1.0.0.jar"
+      ],
+      "env": {
+        "AGGREGATE_HOST": "localhost",
+        "AGGREGATE_PORT": "6460",
+        "AGGREGATE_USER": "admin",
+        "AGGREGATE_PASSWORD": "admin"
+      }
+    }
+  }
+}
+

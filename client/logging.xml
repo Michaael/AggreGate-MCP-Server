@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration monitorInterval="10">
+
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<ThresholdFilter level="debug"/>
+			<PatternLayout pattern="%d %-5p %-25c %m     -     -     -     -     -     -     -     -     [%t] %C.%M (%F:%L)%n%throwable{full}"/>
+		</Console>
+		<File name="file" fileName="client.log" append="false">
+			<ThresholdFilter level="debug"/>
+			<PatternLayout pattern="%d %-5p [%t] %C.%M (%F:%L) - %m%n%throwable{full}"/>
+		</File>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="ag" level="info" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+
+		<Logger name="ag.alerts" level="info"/>
+
+		<Logger name="ag.bindings" level="info"/>
+
+		<Logger name="ag.commands" level="info"/>
+
+		<Logger name="ag.commands.client" level="info"/>
+
+		<Logger name="ag.config" level="info"/>
+
+		<Logger name="ag.context" level="info"/>
+
+		<Logger name="ag.context.info" level="info"/>
+
+		<Logger name="ag.context.children" level="info"/>
+
+		<Logger name="ag.context.variables" level="info"/>
+
+		<Logger name="ag.context.functions" level="info"/>
+
+		<Logger name="ag.context.events" level="info"/>
+
+		<Logger name="ag.context.actions" level="info"/>
+
+		<Logger name="ag.core" level="info"/>
+
+		<Logger name="ag.core.thread" level="info"/>
+
+		<Logger name="ag.device_browser" level="info"/>
+
+		<Logger name="ag.data_table" level="info"/>
+
+		<Logger name="ag.data_table.filter" level="info"/>
+
+		<Logger name="ag.data_table_editor" level="info"/>
+
+		<Logger name="ag.entity_selector" level="info"/>
+
+		<Logger name="ag.event_log" level="info"/>
+
+		<Logger name="ag.expression_builder" level="info"/>
+
+		<Logger name="ag.expressions" level="info"/>
+
+		<Logger name="ag.gui" level="info"/>
+
+		<Logger name="ag.gui_builder" level="info"/>
+
+		<Logger name="ag.guide" level="info"/>
+
+		<Logger name="ag.properties_editor" level="info"/>
+
+		<Logger name="ag.protocol" level="info"/>
+
+		<Logger name="ag.protocol.caching" level="info"/>
+
+		<Logger name="ag.reports" level="info"/>
+
+		<Logger name="ag.resource" level="info"/>
+
+		<Logger name="ag.scripts" level="info"/>
+
+		<Logger name="ag.security" level="info"/>
+
+		<Logger name="ag.stdout" level="info"/>
+
+		<Logger name="ag.stderr" level="info"/>
+
+		<Logger name="ag.system_tree" level="info"/>
+
+		<Logger name="ag.widgets" level="info"/>
+
+		<Root level="warn">
+			<AppenderRef ref="console"/>
+		</Root>
+	</Loggers>
+</Configuration>

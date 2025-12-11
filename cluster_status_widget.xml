@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<widget>
+  <panel name="mainPanel" layout="grid" maxColumns="2" maxRows="4">
+    <label name="title" text="Cluster Status" gridx="0" gridy="0" gridWidth="2" gridHeight="1"/>
+    <label name="clusterStatusLabel" text="Status: " gridx="0" gridy="1" gridWidth="1" gridHeight="1"/>
+    <label name="clusterStatus" text="{clusterStatus}" gridx="1" gridy="1" gridWidth="1" gridHeight="1"/>
+    <label name="device1Label" text="Device 1: " gridx="0" gridy="2" gridWidth="1" gridHeight="1"/>
+    <button name="device1Button" label="{device1Sine}" gridx="1" gridy="2" gridWidth="1" gridHeight="1"/>
+    <label name="device2Label" text="Device 2: " gridx="0" gridy="3" gridWidth="1" gridHeight="1"/>
+    <button name="device2Button" label="{device2Sine}" gridx="1" gridy="3" gridWidth="1" gridHeight="1"/>
+    <label name="device3Label" text="Device 3: " gridx="0" gridy="4" gridWidth="1" gridHeight="1"/>
+    <button name="device3Button" label="{device3Sine}" gridx="1" gridy="4" gridWidth="1" gridHeight="1"/>
+  </panel>
+</widget>
+

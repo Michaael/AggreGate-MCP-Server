@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="false" xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+  <appender name="console" class="org.apache.log4j.ConsoleAppender">
+    <param name="threshold" value="debug"/>
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p %-25c %m     -     [%t] %C.%M (%F:%L)%n"/>
+    </layout>
+  </appender>
+
+  <logger name="ag" additivity="false">
+    <level value="warn"/>
+    <appender-ref ref="console"/>
+  </logger>
+
+  <logger name="ag.alerts">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.bindings">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.commands">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.commands.client">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.config">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.info">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.children">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.variables">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.functions">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.events">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.context.actions">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.core">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.core.thread">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.device_browser">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.data_table">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.data_table.filter">
+    <level value="info"/>
+  </logger>
+
+  <logger name="ag.data_table_editor">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.entity_selector">
+    <level value="info"/>
+  </logger>
+    
+  <logger name="ag.event_log">
+    <level value="info"/>
+  </logger>
+    
+  <logger name="ag.expression_builder">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.expressions">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.gui">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.gui_builder">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.guide">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.properties_editor">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.protocol">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.protocol.caching">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.reports">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.resource">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.scripts">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.security">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.stdout">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.stderr">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.system_tree">
+    <level value="info"/>
+  </logger>
+  
+  <logger name="ag.widgets">
+    <level value="info"/>
+  </logger>
+
+  <root>
+    <priority value="warn"/>
+    <appender-ref ref="console"/>
+  </root>
+
+</log4j:configuration>

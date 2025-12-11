@@ -1,0 +1,8 @@
+<project name="Server Demo Plugin" default="build">
+  <target name="build">
+    <jar destfile="demo.jar">
+      <fileset dir="../../../bin" includes="examples/plugin/**.*" />
+      <fileset file="plugin.xml" />
+    </jar>
+  </target>
+</project>
