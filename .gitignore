@@ -22,8 +22,10 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-# VS Code
+# VS Code / Cursor
 .vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # Logs
 *.log
