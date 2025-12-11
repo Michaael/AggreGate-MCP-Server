@@ -23,7 +23,7 @@
   // Настройки редактора
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": false
+    "source.organizeImports": "never"
   },
   
   // Исключения из поиска
@@ -45,4 +45,5 @@
   // Настройки для Java (если используется)
   "java.configuration.updateBuildConfiguration": "automatic"
 }
+
 
