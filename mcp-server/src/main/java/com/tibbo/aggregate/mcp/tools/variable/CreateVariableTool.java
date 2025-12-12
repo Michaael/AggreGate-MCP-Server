@@ -5,13 +5,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tibbo.aggregate.common.context.CallerController;
 import com.tibbo.aggregate.common.context.Context;
 import com.tibbo.aggregate.common.context.ContextException;
+import com.tibbo.aggregate.common.context.ContextManager;
 import com.tibbo.aggregate.common.context.VariableDefinition;
 import com.tibbo.aggregate.common.security.Permissions;
 import com.tibbo.aggregate.common.security.ServerPermissionChecker;
 import com.tibbo.aggregate.common.datatable.DataRecord;
 import com.tibbo.aggregate.common.datatable.DataTable;
+import com.tibbo.aggregate.common.datatable.SimpleDataTable;
 import com.tibbo.aggregate.common.datatable.TableFormat;
 import com.tibbo.aggregate.common.datatable.encoding.ClassicEncodingSettings;
+import com.tibbo.aggregate.common.context.AbstractContext;
 import com.tibbo.aggregate.mcp.connection.ConnectionManager;
 import com.tibbo.aggregate.mcp.connection.ServerConnection;
 import com.tibbo.aggregate.mcp.protocol.McpException;
@@ -132,7 +135,27 @@ public class CreateVariableTool implements McpTool {
                 com.tibbo.aggregate.common.server.ModelContextConstants.STORAGE_DATABASE;
             
             Context context = connection.executeWithTimeout(() -> {
-                Context ctx = connection.getContextManager().get(path);
+                ContextManager cm = connection.getContextManager();
+                Context ctx = cm.get(path);
+                
+                // If direct get fails and path contains .models., try to get through parent
+                if (ctx == null && path.contains(".models.")) {
+                    try {
+                        // Try to get parent context (users.admin.models)
+                        int lastDot = path.lastIndexOf('.');
+                        if (lastDot > 0) {
+                            String parentPath = path.substring(0, lastDot);
+                            String childName = path.substring(lastDot + 1);
+                            Context parent = cm.get(parentPath);
+                            if (parent != null) {
+                                ctx = parent.getChild(childName);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Ignore and try direct get again
+                    }
+                }
+                
                 if (ctx == null) {
                     throw new RuntimeException("Context not found: " + path);
                 }
@@ -175,14 +198,44 @@ public class CreateVariableTool implements McpTool {
             }
             
             // Check if this is a model context
-            boolean isModelContext = connection.executeWithTimeout(() -> {
-                try {
-                    context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
-                    return true;
-                } catch (ContextException e) {
-                    return false; // Not a model context
-                }
-            }, 60000);
+            // First check by path (models context should be in users.*.models.*)
+            boolean isModelContextByPath = path.contains(".models.");
+            
+            // Then try to verify by checking for V_MODEL_VARIABLES variable
+            boolean isModelContext = false;
+            if (isModelContextByPath) {
+                // Try to check if it's a model context by attempting to get the variable
+                // If context is not initialized, we'll get an error, but we can still try
+                isModelContext = connection.executeWithTimeout(() -> {
+                    try {
+                        // Try to get variable definition first (less likely to cause initialization issues)
+                        try {
+                            context.getVariableDefinition(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                            // If definition exists, try to get the variable
+                            context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                            return true;
+                        } catch (ContextException e) {
+                            // If variable definition doesn't exist or context not initialized,
+                            // but path suggests it's a model, assume it's a model context
+                            // The variable will be created when we add the first variable
+                            if (isModelContextByPath && e.getMessage() != null && 
+                                (e.getMessage().contains("not available") || 
+                                 e.getMessage().contains("not found") ||
+                                 e.getMessage().contains("Error initializing"))) {
+                                // Context exists but not initialized - assume it's a model context
+                                return true;
+                            }
+                            return false;
+                        }
+                    } catch (Exception e) {
+                        // If path suggests it's a model, assume it's a model context
+                        if (isModelContextByPath) {
+                            return true;
+                        }
+                        return false;
+                    }
+                }, 60000);
+            }
             
             if (isModelContext) {
                 // For model context: update V_MODEL_VARIABLES variable directly
@@ -191,8 +244,76 @@ public class CreateVariableTool implements McpTool {
                         CallerController caller = context.getContextManager().getCallerController();
                         
                         // Get mutable clone of modelVariables
-                        DataTable modelVariables = 
-                            context.getVariableClone(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES, caller);
+                        // Try different approaches to get the variable
+                        DataTable modelVariables;
+                        try {
+                            // First try: getVariableClone with caller
+                            modelVariables = context.getVariableClone(
+                                com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES, caller);
+                        } catch (ContextException e) {
+                            // If that fails, try getVariable without caller
+                            try {
+                                DataTable var = context.getVariable(
+                                    com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                                modelVariables = var.clone();
+                            } catch (ContextException e2) {
+                                // If both fail, check if it's an initialization error
+                                if (e.getMessage() != null && e2.getMessage() != null &&
+                                    (e.getMessage().contains("not available") || 
+                                     e.getMessage().contains("Error initializing") ||
+                                     e2.getMessage().contains("not available") ||
+                                     e2.getMessage().contains("Error initializing"))) {
+                                    // Context exists but not initialized - try to wait and retry with getVariable
+                                    try {
+                                        Thread.sleep(1000);
+                                        DataTable var = context.getVariable(
+                                            com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                                        modelVariables = var.clone();
+                                    } catch (Exception retryException) {
+                                        // If still fails, try to get variable definition format
+                                        // This happens when model context is not initialized yet
+                                        try {
+                                            // Try to get variable definition to get the format
+                                            VariableDefinition vd = context.getVariableDefinition(
+                                                com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                                            if (vd != null && vd.getFormat() != null) {
+                                                // Use format from variable definition
+                                                modelVariables = new SimpleDataTable(vd.getFormat(), true);
+                                            } else {
+                                                // Fallback: create extended format based on VARIABLE_DEFINITION_FORMAT
+                                                TableFormat modelVarFormat = AbstractContext.VARIABLE_DEFINITION_FORMAT.clone();
+                                                // Add model context specific fields if not present
+                                                if (!modelVarFormat.hasField(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_STORAGE_MODE)) {
+                                                    modelVarFormat.addField("<" + com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_STORAGE_MODE + "><I><F=N>");
+                                                }
+                                                if (!modelVarFormat.hasField(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_HISTORY_RATE)) {
+                                                    modelVarFormat.addField("<" + com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_HISTORY_RATE + "><L><F=N>");
+                                                }
+                                                if (!modelVarFormat.hasField(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_UPDATE_HISTORY_STORAGE_TIME)) {
+                                                    modelVarFormat.addField("<" + com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_VD_UPDATE_HISTORY_STORAGE_TIME + "><L><F=N>");
+                                                }
+                                                // Add serverCachingMode field if not present (used in model context)
+                                                if (!modelVarFormat.hasField(AbstractContext.FIELD_VD_SERVER_CACHING_MODE)) {
+                                                    modelVarFormat.addField("<" + AbstractContext.FIELD_VD_SERVER_CACHING_MODE + "><I><F=N>");
+                                                }
+                                                // Use extended format to create new table
+                                                modelVariables = new SimpleDataTable(modelVarFormat, true);
+                                            }
+                                        } catch (Exception createException) {
+                                            // If still fails, throw original exception with more details
+                                            throw new RuntimeException(
+                                                "Failed to access model context variables. " +
+                                                "Context path: " + context.getPath() + ". " +
+                                                "Error: " + e.getMessage() + " / " + e2.getMessage() + 
+                                                ". Create exception: " + createException.getMessage(), e);
+                                        }
+                                    }
+                                } else {
+                                    throw new RuntimeException(
+                                        "Failed to get model variables: " + e.getMessage() + " / " + e2.getMessage(), e);
+                                }
+                            }
+                        }
                         
                         // Check if variable already exists
                         boolean exists = false;

@@ -4,17 +4,23 @@ java {
 }
 
 dependencies {
-    // Use only local JAR files to avoid SSL issues
+    // Используем локальные JAR файлы из последнего SDK 1.3.6
+    // Для обновления JAR используйте скрипт update-sdk.ps1 или соберите SDK вручную
     implementation(files("../libs/aggregate-api.jar"))
     implementation(files("../libs/aggregate-api-libs.jar"))
     
-    // Jackson JARs should be manually added to libs/ directory
-    // Expected files:
-    // - jackson-core-2.14.1.jar (or compatible version)
-    // - jackson-databind-2.14.1.jar
-    // - jackson-annotations-2.14.1.jar
+    // Jackson для JSON обработки - версия из последнего SDK 1.3.6
+    // Используем версии из локальных JAR или Maven
     fileTree(mapOf("dir" to "../libs", "include" to listOf("jackson-*.jar"))).forEach { file ->
         implementation(files(file))
+    }
+    
+    // Если локальные JAR недоступны, используем Maven зависимости
+    // Версия Jackson из последнего SDK 1.3.6
+    if (fileTree(mapOf("dir" to "../libs", "include" to listOf("jackson-core-*.jar"))).isEmpty()) {
+        implementation("com.fasterxml.jackson.core:jackson-core:2.14.1")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
+        implementation("com.fasterxml.jackson.core:jackson-annotations:2.14.1")
     }
 }
 
