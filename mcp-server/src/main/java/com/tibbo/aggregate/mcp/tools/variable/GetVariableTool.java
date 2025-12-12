@@ -78,14 +78,29 @@ public class GetVariableTool implements McpTool {
             String path = ContextPathParser.parsePath(params.get("path").asText());
             String name = params.get("name").asText();
             
-            Context context = connection.getContextManager().get(path);
-            com.tibbo.aggregate.common.datatable.DataTable variable = context.getVariable(name);
+            Context context = connection.executeWithTimeout(() -> {
+                Context ctx = connection.getContextManager().get(path);
+                if (ctx == null) {
+                    throw new RuntimeException("Context not found: " + path);
+                }
+                return ctx;
+            }, 60000);
+            
+            com.tibbo.aggregate.common.datatable.DataTable variable = connection.executeWithTimeout(() -> {
+                return context.getVariable(name);
+            }, 60000);
             
             return DataTableConverter.toJson(variable);
         } catch (ContextException e) {
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                 "Failed to get variable: " + e.getMessage()
+            );
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                "Failed to get variable: " + errorMessage
             );
         }
     }

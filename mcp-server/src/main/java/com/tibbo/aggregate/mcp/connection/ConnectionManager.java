@@ -78,6 +78,13 @@ public class ConnectionManager {
     }
     
     /**
+     * Remove default server connection
+     */
+    public void removeDefaultServerConnection() {
+        removeServerConnection(DEFAULT_SERVER_KEY);
+    }
+    
+    /**
      * Remove agent connection
      */
     public void removeAgentConnection(String agentName) {

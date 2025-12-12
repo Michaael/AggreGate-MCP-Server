@@ -53,14 +53,40 @@ public class DisconnectTool implements McpTool {
             );
         }
         
-        connection.disconnect();
-        connectionManager.removeServerConnection(connectionKey);
-        
-        ObjectNode result = instance.objectNode();
-        result.put("success", true);
-        result.put("message", "Disconnected from server");
-        
-        return result;
+        try {
+            // Проверяем, подключен ли сервер, перед отключением
+            try {
+                if (connection.isConnected() || connection.isLoggedIn()) {
+                    connection.disconnect();
+                }
+            } catch (Exception e) {
+                // Игнорируем ошибки при проверке подключения - просто пытаемся отключиться
+                try {
+                    connection.disconnect();
+                } catch (Exception e2) {
+                    // Игнорируем ошибки отключения
+                }
+            }
+            
+            // Удаляем соединение из менеджера
+            if (connectionKey != null) {
+                connectionManager.removeServerConnection(connectionKey);
+            } else {
+                connectionManager.removeDefaultServerConnection();
+            }
+            
+            ObjectNode result = instance.objectNode();
+            result.put("success", true);
+            result.put("message", "Disconnected from server");
+            
+            return result;
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONNECTION_ERROR,
+                "Failed to disconnect: " + errorMessage
+            );
+        }
     }
 }
 

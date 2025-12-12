@@ -87,12 +87,17 @@ public class CallFunctionTool implements McpTool {
             Context context;
             try {
                 context = connection.executeWithTimeout(() -> {
-                    return connection.getContextManager().get(path);
+                    Context ctx = connection.getContextManager().get(path);
+                    if (ctx == null) {
+                        throw new RuntimeException("Context not found: " + path);
+                    }
+                    return ctx;
                 }, 60000);
             } catch (Exception e) {
+                String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
                 throw new McpException(
                     com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                    "Failed to get context: " + e.getMessage()
+                    "Failed to get context: " + errorMessage
                 );
             }
             

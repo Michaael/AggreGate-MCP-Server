@@ -70,8 +70,30 @@ public class DeleteUserTool implements McpTool {
         
         try {
             String username = params.get("username").asText();
-            Context usersContext = connection.getContextManager().get(Contexts.CTX_USERS);
-            usersContext.callFunction("delete", username);
+            
+            if (connection.getContextManager() == null) {
+                throw new McpException(
+                    com.tibbo.aggregate.mcp.protocol.McpError.CONNECTION_ERROR,
+                    "Context manager is not available"
+                );
+            }
+            
+            Context usersContext = connection.executeWithTimeout(() -> {
+                Context ctx = connection.getContextManager().get(Contexts.CTX_USERS);
+                if (ctx == null) {
+                    throw new RuntimeException("Users context not found");
+                }
+                return ctx;
+            }, 60000);
+            
+            connection.executeWithTimeout(() -> {
+                try {
+                    usersContext.callFunction("delete", username);
+                    return null;
+                } catch (ContextException e) {
+                    throw new RuntimeException(e);
+                }
+            }, 60000);
             
             ObjectNode result = instance.objectNode();
             result.put("success", true);
@@ -83,6 +105,12 @@ public class DeleteUserTool implements McpTool {
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                 "Failed to delete user: " + e.getMessage()
+            );
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                "Failed to delete user: " + errorMessage
             );
         }
     }

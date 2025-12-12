@@ -127,6 +127,13 @@ public class CreateFunctionTool implements McpTool {
             String expression = params.has("expression") ? params.get("expression").asText() : null;
             String query = params.has("query") ? params.get("query").asText() : null;
             
+            if (connection.getContextManager() == null) {
+                throw new McpException(
+                    com.tibbo.aggregate.mcp.protocol.McpError.CONNECTION_ERROR,
+                    "Context manager is not available"
+                );
+            }
+            
             Context context = connection.executeWithTimeout(() -> {
                 Context ctx = connection.getContextManager().get(path);
                 if (ctx == null) {
@@ -134,13 +141,6 @@ public class CreateFunctionTool implements McpTool {
                 }
                 return ctx;
             }, 60000);
-            
-            if (context == null) {
-                throw new McpException(
-                    com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                    "Context not found: " + path
-                );
-            }
             
             // Parse input and output formats if provided
             // If not provided, create default formats for calculator function
@@ -454,11 +454,12 @@ public class CreateFunctionTool implements McpTool {
             } else {
                 // For regular context: use updateFunctionDefinitions
                 connection.executeWithTimeout(() -> {
-                    com.google.common.collect.ImmutableMap<String, com.tibbo.aggregate.common.util.Pair<FunctionDefinition, Boolean>> functionMap = 
-                        com.google.common.collect.ImmutableMap.of(
-                            functionName, 
-                            new com.tibbo.aggregate.common.util.Pair<>(fd, true)
-                        );
+                    java.util.Map<String, com.tibbo.aggregate.common.util.Pair<FunctionDefinition, Boolean>> functionMap = 
+                        new java.util.HashMap<>();
+                    functionMap.put(
+                        functionName, 
+                        new com.tibbo.aggregate.common.util.Pair<>(fd, true)
+                    );
                     
                     context.updateFunctionDefinitions(functionMap, null, false, null);
                     

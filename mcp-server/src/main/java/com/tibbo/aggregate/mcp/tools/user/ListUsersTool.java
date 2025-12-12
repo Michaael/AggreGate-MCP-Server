@@ -60,27 +60,56 @@ public class ListUsersTool implements McpTool {
             );
         }
         
-        String mask = ContextUtils.userContextPath(ContextUtils.CONTEXT_GROUP_MASK);
-        List<Context> userContexts = ContextUtils.expandMaskToContexts(mask, connection.getContextManager(), null);
-        
-        ArrayNode result = instance.arrayNode();
-        for (Context userContext : userContexts) {
-            ObjectNode userNode = instance.objectNode();
-            userNode.put("path", userContext.getPath());
-            userNode.put("name", userContext.getName());
-            
-            try {
-                DataTable status = userContext.getVariable("status");
-                Date creationTime = status.rec().getDate("creationTime");
-                userNode.put("creationTime", creationTime != null ? creationTime.getTime() : 0);
-            } catch (Exception e) {
-                userNode.put("creationTime", 0);
+        try {
+            if (connection.getContextManager() == null) {
+                throw new McpException(
+                    com.tibbo.aggregate.mcp.protocol.McpError.CONNECTION_ERROR,
+                    "Context manager is not available"
+                );
             }
             
-            result.add(userNode);
+            String mask = ContextUtils.userContextPath(ContextUtils.CONTEXT_GROUP_MASK);
+            List<Context> userContexts = connection.executeWithTimeout(() -> {
+                return ContextUtils.expandMaskToContexts(mask, connection.getContextManager(), null);
+            }, 60000);
+            
+            if (userContexts == null) {
+                userContexts = new java.util.ArrayList<>();
+            }
+            
+            ArrayNode result = instance.arrayNode();
+            for (Context userContext : userContexts) {
+                if (userContext != null) {
+                    ObjectNode userNode = instance.objectNode();
+                    userNode.put("path", userContext.getPath() != null ? userContext.getPath() : "");
+                    userNode.put("name", userContext.getName() != null ? userContext.getName() : "");
+                    
+                    try {
+                        DataTable status = userContext.getVariable("status");
+                        if (status != null && status.getRecordCount() > 0) {
+                            Date creationTime = status.rec().getDate("creationTime");
+                            userNode.put("creationTime", creationTime != null ? creationTime.getTime() : 0);
+                        } else {
+                            userNode.put("creationTime", 0);
+                        }
+                    } catch (Exception e) {
+                        userNode.put("creationTime", 0);
+                    }
+                    
+                    result.add(userNode);
+                }
+            }
+            
+            return result;
+        } catch (McpException e) {
+            throw e;
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                "Failed to list users: " + errorMessage
+            );
         }
-        
-        return result;
     }
 }
 

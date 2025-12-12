@@ -72,20 +72,44 @@ public class ListFunctionsTool implements McpTool {
             );
         }
         
-        String path = ContextPathParser.parsePath(params.get("path").asText());
-        Context context = connection.getContextManager().get(path);
-        List<FunctionDefinition> functions = context.getFunctionDefinitions();
-        
-        ArrayNode result = instance.arrayNode();
-        for (FunctionDefinition fd : functions) {
-            ObjectNode funcNode = instance.objectNode();
-            funcNode.put("name", fd.getName());
-            funcNode.put("description", fd.getDescription());
-            funcNode.put("group", fd.getGroup());
-            result.add(funcNode);
+        try {
+            String path = ContextPathParser.parsePath(params.get("path").asText());
+            
+            Context context = connection.executeWithTimeout(() -> {
+                Context ctx = connection.getContextManager().get(path);
+                if (ctx == null) {
+                    throw new RuntimeException("Context not found: " + path);
+                }
+                return ctx;
+            }, 60000);
+            
+            List<FunctionDefinition> functions = connection.executeWithTimeout(() -> {
+                return context.getFunctionDefinitions();
+            }, 60000);
+            
+            if (functions == null) {
+                functions = new java.util.ArrayList<>();
+            }
+            
+            ArrayNode result = instance.arrayNode();
+            for (FunctionDefinition fd : functions) {
+                if (fd != null) {
+                    ObjectNode funcNode = instance.objectNode();
+                    funcNode.put("name", fd.getName() != null ? fd.getName() : "");
+                    funcNode.put("description", fd.getDescription() != null ? fd.getDescription() : "");
+                    funcNode.put("group", fd.getGroup() != null ? fd.getGroup() : "");
+                    result.add(funcNode);
+                }
+            }
+            
+            return result;
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                "Failed to list functions: " + errorMessage
+            );
         }
-        
-        return result;
     }
 }
 
