@@ -388,10 +388,54 @@ public class CreateVariableTool implements McpTool {
                     }
                 }, 60000);
                 
-                // Verify variable was added
-                VariableDefinition verifyVd = connection.executeWithTimeout(() -> {
-                    return context.getVariableDefinition(variableName);
-                }, 60000);
+                // Verify variable was added with retries and delay
+                VariableDefinition verifyVd = null;
+                int maxRetries = 5;
+                int retryDelay = 200; // milliseconds
+                
+                for (int retry = 0; retry < maxRetries; retry++) {
+                    if (retry > 0) {
+                        try {
+                            Thread.sleep(retryDelay);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    
+                    verifyVd = connection.executeWithTimeout(() -> {
+                        return context.getVariableDefinition(variableName);
+                    }, 60000);
+                    
+                    if (verifyVd != null) {
+                        break;
+                    }
+                }
+                
+                if (verifyVd == null) {
+                    // Try to check in modelVariables variable as fallback
+                    try {
+                        com.tibbo.aggregate.common.context.CallerController caller = 
+                            context.getContextManager().getCallerController();
+                        com.tibbo.aggregate.common.datatable.DataTable modelVariables = 
+                            context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES, caller);
+                        
+                        boolean found = false;
+                        for (int i = 0; i < modelVariables.getRecordCount(); i++) {
+                            com.tibbo.aggregate.common.datatable.DataRecord rec = modelVariables.getRecord(i);
+                            if (variableName.equals(rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_VD_NAME))) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (found) {
+                            // Variable exists in modelVariables, verification passed
+                            verifyVd = context.getVariableDefinition(variableName);
+                        }
+                    } catch (Exception e) {
+                        // Ignore - will throw error below
+                    }
+                }
                 
                 if (verifyVd == null) {
                     throw new McpException(

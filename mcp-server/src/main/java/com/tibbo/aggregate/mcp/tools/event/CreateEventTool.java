@@ -243,10 +243,54 @@ public class CreateEventTool implements McpTool {
                     }
                 }, 60000);
                 
-                // Verify event was added
-                EventDefinition verifyEd = connection.executeWithTimeout(() -> {
-                    return context.getEventDefinition(eventName);
-                }, 60000);
+                // Verify event was added with retries and delay
+                EventDefinition verifyEd = null;
+                int maxRetries = 5;
+                int retryDelay = 200; // milliseconds
+                
+                for (int retry = 0; retry < maxRetries; retry++) {
+                    if (retry > 0) {
+                        try {
+                            Thread.sleep(retryDelay);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    
+                    verifyEd = connection.executeWithTimeout(() -> {
+                        return context.getEventDefinition(eventName);
+                    }, 60000);
+                    
+                    if (verifyEd != null) {
+                        break;
+                    }
+                }
+                
+                if (verifyEd == null) {
+                    // Try to check in modelEvents variable as fallback
+                    try {
+                        com.tibbo.aggregate.common.context.CallerController caller = 
+                            context.getContextManager().getCallerController();
+                        com.tibbo.aggregate.common.datatable.DataTable modelEvents = 
+                            context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_EVENTS, caller);
+                        
+                        boolean found = false;
+                        for (int i = 0; i < modelEvents.getRecordCount(); i++) {
+                            com.tibbo.aggregate.common.datatable.DataRecord rec = modelEvents.getRecord(i);
+                            if (eventName.equals(rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_ED_NAME))) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (found) {
+                            // Event exists in modelEvents, verification passed
+                            verifyEd = context.getEventDefinition(eventName);
+                        }
+                    } catch (Exception e) {
+                        // Ignore - will throw error below
+                    }
+                }
                 
                 if (verifyEd == null) {
                     throw new McpException(

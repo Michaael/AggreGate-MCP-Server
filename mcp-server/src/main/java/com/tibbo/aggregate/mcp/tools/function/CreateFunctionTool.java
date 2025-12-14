@@ -152,7 +152,16 @@ public class CreateFunctionTool implements McpTool {
                     // Try to parse as encoded format string
                     String formatStr = params.get("inputFormat").asText();
                     if (formatStr != null && !formatStr.isEmpty()) {
-                        inputFormat = new TableFormat(formatStr, null, false);
+                        // Check if format has double brackets (<<...>>) - this is the correct format for Expression functions
+                        if (formatStr.startsWith("<<") && formatStr.endsWith(">>")) {
+                            // Remove outer brackets and parse inner format
+                            String innerFormat = formatStr.substring(2, formatStr.length() - 2);
+                            // Use TableFormat constructor with format string and encoding settings
+                            inputFormat = new TableFormat(innerFormat, new com.tibbo.aggregate.common.datatable.encoding.ClassicEncodingSettings(false), false);
+                        } else {
+                            // Standard format parsing
+                            inputFormat = new TableFormat(formatStr, null, false);
+                        }
                     }
                 } catch (Exception e) {
                     throw new McpException(
@@ -185,7 +194,16 @@ public class CreateFunctionTool implements McpTool {
                 try {
                     String formatStr = params.get("outputFormat").asText();
                     if (formatStr != null && !formatStr.isEmpty()) {
-                        outputFormat = new TableFormat(formatStr, null, false);
+                        // Check if format has double brackets (<<...>>) - this is the correct format for Expression functions
+                        if (formatStr.startsWith("<<") && formatStr.endsWith(">>")) {
+                            // Remove outer brackets and parse inner format
+                            String innerFormat = formatStr.substring(2, formatStr.length() - 2);
+                            // Use TableFormat constructor with format string and encoding settings
+                            outputFormat = new TableFormat(innerFormat, new com.tibbo.aggregate.common.datatable.encoding.ClassicEncodingSettings(false), false);
+                        } else {
+                            // Standard format parsing
+                            outputFormat = new TableFormat(formatStr, null, false);
+                        }
                     }
                 } catch (Exception e) {
                     throw new McpException(
@@ -225,7 +243,7 @@ public class CreateFunctionTool implements McpTool {
             final String finalDescription = description;
             final String finalGroup = group;
             final int finalFunctionType = functionType;
-            final String finalExpression = expression;
+            final String finalExpression = expression; // May be auto-generated for Expression type
             final String finalQuery = query;
             
             // For Java type (0), set implementation
@@ -308,12 +326,43 @@ public class CreateFunctionTool implements McpTool {
                 }
             });
             } else if (functionType == com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_EXPRESSION) {
-                // For Expression type (1), set expression
+                // For Expression type (1), generate expression if not provided
                 if (expression == null || expression.isEmpty()) {
-                    throw new McpException(
-                        com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
-                        "Expression is required for Expression type functions"
-                    );
+                    // Auto-generate expression based on inputFormat and outputFormat
+                    // Format: table("<<outputFormat>>", {field1} + {field2} + ...)
+                    StringBuilder exprBuilder = new StringBuilder();
+                    exprBuilder.append("table(\"<<");
+                    
+                    // Convert outputFormat to string format
+                    if (outputFormat != null && outputFormat.getFieldCount() > 0) {
+                        // Build format string from outputFormat fields
+                        for (int i = 0; i < outputFormat.getFieldCount(); i++) {
+                            com.tibbo.aggregate.common.datatable.FieldFormat field = outputFormat.getField(i);
+                            exprBuilder.append("<").append(field.getName()).append(">");
+                            exprBuilder.append("<").append(String.valueOf(field.getType())).append(">");
+                        }
+                    } else {
+                        // Default: result field
+                        exprBuilder.append("result><E>");
+                    }
+                    exprBuilder.append(">>\"");
+                    
+                    // Build expression part with input fields
+                    if (inputFormat != null && inputFormat.getFieldCount() > 0) {
+                        exprBuilder.append(",");
+                        for (int i = 0; i < inputFormat.getFieldCount(); i++) {
+                            com.tibbo.aggregate.common.datatable.FieldFormat field = inputFormat.getField(i);
+                            if (i > 0) {
+                                exprBuilder.append("+");
+                            }
+                            exprBuilder.append("{").append(field.getName()).append("}");
+                        }
+                    } else {
+                        // Default: arg1 + arg2
+                        exprBuilder.append(",{arg1}+{arg2}");
+                    }
+                    exprBuilder.append(")");
+                    expression = exprBuilder.toString();
                 }
                 // Note: Expression is stored in modelFunctions, not in FunctionDefinition
                 // FunctionDefinition for Expression type doesn't need implementation
@@ -417,10 +466,41 @@ public class CreateFunctionTool implements McpTool {
                             javaCode.append("}\n");
                             newRec.setValue(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_FD_IMPLEMENTATION, javaCode.toString());
                         } else if (finalFunctionType == com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_EXPRESSION) {
-                            if (finalExpression == null || finalExpression.isEmpty()) {
-                                throw new RuntimeException("Expression is required for Expression type functions");
+                            String expressionToUse = finalExpression;
+                            // If expression is still empty, generate it now with access to formats
+                            if (expressionToUse == null || expressionToUse.isEmpty()) {
+                                StringBuilder exprBuilder = new StringBuilder();
+                                exprBuilder.append("table(\"<<");
+                                
+                                // Convert outputFormat to string format
+                                if (finalOutputFormat != null && finalOutputFormat.getFieldCount() > 0) {
+                                    for (int i = 0; i < finalOutputFormat.getFieldCount(); i++) {
+                                        com.tibbo.aggregate.common.datatable.FieldFormat field = finalOutputFormat.getField(i);
+                                        exprBuilder.append("<").append(field.getName()).append(">");
+                                        exprBuilder.append("<").append(String.valueOf(field.getType())).append(">");
+                                    }
+                                } else {
+                                    exprBuilder.append("result><E>");
+                                }
+                                exprBuilder.append(">>\"");
+                                
+                                // Build expression part with input fields
+                                if (finalInputFormat != null && finalInputFormat.getFieldCount() > 0) {
+                                    exprBuilder.append(",");
+                                    for (int i = 0; i < finalInputFormat.getFieldCount(); i++) {
+                                        com.tibbo.aggregate.common.datatable.FieldFormat field = finalInputFormat.getField(i);
+                                        if (i > 0) {
+                                            exprBuilder.append("+");
+                                        }
+                                        exprBuilder.append("{").append(field.getName()).append("}");
+                                    }
+                                } else {
+                                    exprBuilder.append(",{arg1}+{arg2}");
+                                }
+                                exprBuilder.append(")");
+                                expressionToUse = exprBuilder.toString();
                             }
-                            newRec.setValue(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_FD_EXPRESSION, finalExpression);
+                            newRec.setValue(com.tibbo.aggregate.common.server.ModelContextConstants.FIELD_FD_EXPRESSION, expressionToUse);
                         } else if (finalFunctionType == com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_QUERY) {
                             if (finalQuery == null || finalQuery.isEmpty()) {
                                 throw new RuntimeException("Query is required for Query type functions");
@@ -440,10 +520,54 @@ public class CreateFunctionTool implements McpTool {
                     }
                 }, 60000);
                 
-                // Verify function was added
-                FunctionDefinition verifyFd = connection.executeWithTimeout(() -> {
-                    return context.getFunctionDefinition(functionName);
-                }, 60000);
+                // Verify function was added with retries and delay
+                FunctionDefinition verifyFd = null;
+                int maxRetries = 5;
+                int retryDelay = 200; // milliseconds
+                
+                for (int retry = 0; retry < maxRetries; retry++) {
+                    if (retry > 0) {
+                        try {
+                            Thread.sleep(retryDelay);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    
+                    verifyFd = connection.executeWithTimeout(() -> {
+                        return context.getFunctionDefinition(functionName);
+                    }, 60000);
+                    
+                    if (verifyFd != null) {
+                        break;
+                    }
+                }
+                
+                if (verifyFd == null) {
+                    // Try to check in modelFunctions variable as fallback
+                    try {
+                        com.tibbo.aggregate.common.context.CallerController caller = 
+                            context.getContextManager().getCallerController();
+                        com.tibbo.aggregate.common.datatable.DataTable modelFunctions = 
+                            context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_FUNCTIONS, caller);
+                        
+                        boolean found = false;
+                        for (int i = 0; i < modelFunctions.getRecordCount(); i++) {
+                            com.tibbo.aggregate.common.datatable.DataRecord rec = modelFunctions.getRecord(i);
+                            if (functionName.equals(rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_NAME))) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (found) {
+                            // Function exists in modelFunctions, verification passed
+                            verifyFd = context.getFunctionDefinition(functionName);
+                        }
+                    } catch (Exception e) {
+                        // Ignore - will throw error below
+                    }
+                }
                 
                 if (verifyFd == null) {
                     throw new McpException(

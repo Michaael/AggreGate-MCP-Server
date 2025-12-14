@@ -80,7 +80,7 @@ public class DataTableConverter {
         return dataTable;
     }
 
-    private static ObjectNode formatToJson(TableFormat format) {
+    public static ObjectNode formatToJson(TableFormat format) {
         ObjectNode formatJson = objectMapper.createObjectNode();
         formatJson.put("minRecords", format.getMinRecords());
         formatJson.put("maxRecords", format.getMaxRecords());
