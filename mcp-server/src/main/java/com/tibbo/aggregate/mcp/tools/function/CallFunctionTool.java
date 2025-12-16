@@ -147,10 +147,74 @@ public class CallFunctionTool implements McpTool {
                         }, 60000);
                     } else {
                         // DataTable structure - use DataTable approach
-                        com.tibbo.aggregate.common.datatable.DataTable parameters = DataTableConverter.fromJson(parametersJson);
+                        com.tibbo.aggregate.common.datatable.DataTable parameters;
+                        try {
+                            parameters = DataTableConverter.fromJson(parametersJson);
+                        } catch (IllegalArgumentException e) {
+                            // If format is missing, try to get it from function definition
+                            if (e.getMessage() != null && e.getMessage().contains("TableFormat is required")) {
+                                // Get function definition to extract input format
+                                com.tibbo.aggregate.common.context.FunctionDefinition funcDef = 
+                                    connection.executeWithTimeout(() -> {
+                                        try {
+                                            java.util.List<com.tibbo.aggregate.common.context.FunctionDefinition> funcs = 
+                                                context.getFunctionDefinitions();
+                                            for (com.tibbo.aggregate.common.context.FunctionDefinition fd : funcs) {
+                                                if (functionName.equals(fd.getName())) {
+                                                    return fd;
+                                                }
+                                            }
+                                            return null;
+                                        } catch (Exception ex) {
+                                            return null;
+                                        }
+                                    }, 60000);
+                                
+                                if (funcDef != null && funcDef.getInputFormat() != null) {
+                                    // Use function's input format
+                                    com.tibbo.aggregate.common.datatable.TableFormat inputFormat = funcDef.getInputFormat();
+                                    // Create DataTable with function's input format
+                                    com.tibbo.aggregate.common.datatable.DataTable paramsTable = 
+                                        new com.tibbo.aggregate.common.datatable.SimpleDataTable(inputFormat);
+                                    
+                                    // If parametersJson has records, try to populate
+                                    if (parametersJson.has("records") && parametersJson.get("records").isArray()) {
+                                        com.fasterxml.jackson.databind.node.ArrayNode records = 
+                                            (com.fasterxml.jackson.databind.node.ArrayNode) parametersJson.get("records");
+                                        if (records.size() > 0) {
+                                            com.fasterxml.jackson.databind.node.ObjectNode firstRecord = 
+                                                (com.fasterxml.jackson.databind.node.ObjectNode) records.get(0);
+                                            com.tibbo.aggregate.common.datatable.DataRecord rec = paramsTable.addRecord();
+                                            // Set values from JSON record
+                                            java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = 
+                                                firstRecord.fields();
+                                            while (fields.hasNext()) {
+                                                java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = fields.next();
+                                                String fieldName = entry.getKey();
+                                                com.fasterxml.jackson.databind.JsonNode valueNode = entry.getValue();
+                                                if (rec.hasField(fieldName)) {
+                                                    Object value = convertJsonValue(valueNode);
+                                                    rec.setValue(fieldName, value);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    parameters = paramsTable;
+                                } else {
+                                    throw new McpException(
+                                        com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
+                                        "TableFormat is required to create DataRecord from JSON. Function definition not found or has no input format."
+                                    );
+                                }
+                            } else {
+                                throw e;
+                            }
+                        }
+                        // Create final copy for lambda
+                        final com.tibbo.aggregate.common.datatable.DataTable finalParameters = parameters;
                         result = connection.executeWithTimeout(() -> {
                             try {
-                                return context.callFunction(functionName, parameters);
+                                return context.callFunction(functionName, finalParameters);
                             } catch (ContextException e) {
                                 throw new RuntimeException(e);
                             }
@@ -187,6 +251,24 @@ public class CallFunctionTool implements McpTool {
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                 "Failed to call function: " + e.getMessage()
             );
+        }
+    }
+    
+    private static Object convertJsonValue(com.fasterxml.jackson.databind.JsonNode valueNode) {
+        if (valueNode.isNull()) {
+            return null;
+        } else if (valueNode.isTextual()) {
+            return valueNode.asText();
+        } else if (valueNode.isInt()) {
+            return valueNode.asInt();
+        } else if (valueNode.isLong()) {
+            return valueNode.asLong();
+        } else if (valueNode.isDouble() || valueNode.isFloat()) {
+            return valueNode.asDouble();
+        } else if (valueNode.isBoolean()) {
+            return valueNode.asBoolean();
+        } else {
+            return valueNode.asText();
         }
     }
 }

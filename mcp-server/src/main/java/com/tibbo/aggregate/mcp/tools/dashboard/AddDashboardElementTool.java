@@ -126,7 +126,79 @@ public class AddDashboardElementTool implements McpTool {
             
             // Set parameters if provided
             if (params.has("parameters") && params.get("parameters").isObject()) {
-                DataTable parametersTable = DataTableConverter.fromJson(params.get("parameters"));
+                com.fasterxml.jackson.databind.JsonNode parametersJson = params.get("parameters");
+                DataTable parametersTable;
+                try {
+                    parametersTable = DataTableConverter.fromJson(parametersJson);
+                } catch (IllegalArgumentException e) {
+                    // If format is missing, create a format from the records structure
+                    if (e.getMessage() != null && e.getMessage().contains("TableFormat is required")) {
+                        // Try to infer format from records
+                        if (parametersJson.has("records") && parametersJson.get("records").isArray()) {
+                            com.fasterxml.jackson.databind.node.ArrayNode records = 
+                                (com.fasterxml.jackson.databind.node.ArrayNode) parametersJson.get("records");
+                            if (records.size() > 0) {
+                                com.fasterxml.jackson.databind.node.ObjectNode firstRecord = 
+                                    (com.fasterxml.jackson.databind.node.ObjectNode) records.get(0);
+                                // Create format based on record fields
+                                com.tibbo.aggregate.common.datatable.TableFormat inferredFormat = 
+                                    new com.tibbo.aggregate.common.datatable.TableFormat(0, Integer.MAX_VALUE);
+                                java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = 
+                                    firstRecord.fields();
+                                while (fields.hasNext()) {
+                                    java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = fields.next();
+                                    String fieldName = entry.getKey();
+                                    com.fasterxml.jackson.databind.JsonNode valueNode = entry.getValue();
+                                    // Infer type from value
+                                    String type = "S"; // Default to String
+                                    if (valueNode.isNumber()) {
+                                        if (valueNode.isInt() || valueNode.isLong()) {
+                                            type = "I";
+                                        } else {
+                                            type = "E";
+                                        }
+                                    } else if (valueNode.isBoolean()) {
+                                        type = "B";
+                                    }
+                                    inferredFormat.addField("<" + fieldName + "><" + type + ">");
+                                }
+                                // Create DataTable with inferred format
+                                parametersTable = new com.tibbo.aggregate.common.datatable.SimpleDataTable(inferredFormat);
+                                // Populate with records
+                                for (com.fasterxml.jackson.databind.JsonNode recordNode : records) {
+                                    if (recordNode.isObject()) {
+                                        com.tibbo.aggregate.common.datatable.DataRecord rec = parametersTable.addRecord();
+                                        com.fasterxml.jackson.databind.node.ObjectNode recordObj = 
+                                            (com.fasterxml.jackson.databind.node.ObjectNode) recordNode;
+                                        java.util.Iterator<java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> recordFields = 
+                                            recordObj.fields();
+                                        while (recordFields.hasNext()) {
+                                            java.util.Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = recordFields.next();
+                                            String fieldName = entry.getKey();
+                                            com.fasterxml.jackson.databind.JsonNode valueNode = entry.getValue();
+                                            if (rec.hasField(fieldName)) {
+                                                Object value = convertJsonValue(valueNode);
+                                                rec.setValue(fieldName, value);
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Empty records - create empty format
+                                com.tibbo.aggregate.common.datatable.TableFormat emptyFormat = 
+                                    new com.tibbo.aggregate.common.datatable.TableFormat(0, Integer.MAX_VALUE);
+                                parametersTable = new com.tibbo.aggregate.common.datatable.SimpleDataTable(emptyFormat);
+                            }
+                        } else {
+                            // No records - create empty format
+                            com.tibbo.aggregate.common.datatable.TableFormat emptyFormat = 
+                                new com.tibbo.aggregate.common.datatable.TableFormat(0, Integer.MAX_VALUE);
+                            parametersTable = new com.tibbo.aggregate.common.datatable.SimpleDataTable(emptyFormat);
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
                 newElement.setValue(DashboardContextConstants.ELEMENT_FIELD_PARAMETERS, parametersTable);
             } else {
                 // Set empty parameters table if not provided
@@ -170,6 +242,24 @@ public class AddDashboardElementTool implements McpTool {
                 "Failed to add dashboard element: " + errorMessage,
                 errorDetails
             );
+        }
+    }
+    
+    private static Object convertJsonValue(com.fasterxml.jackson.databind.JsonNode valueNode) {
+        if (valueNode.isNull()) {
+            return null;
+        } else if (valueNode.isTextual()) {
+            return valueNode.asText();
+        } else if (valueNode.isInt()) {
+            return valueNode.asInt();
+        } else if (valueNode.isLong()) {
+            return valueNode.asLong();
+        } else if (valueNode.isDouble() || valueNode.isFloat()) {
+            return valueNode.asDouble();
+        } else if (valueNode.isBoolean()) {
+            return valueNode.asBoolean();
+        } else {
+            return valueNode.asText();
         }
     }
 }

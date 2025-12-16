@@ -88,7 +88,16 @@ public class SetVariableFieldTool implements McpTool {
             String fieldName = params.get("fieldName").asText();
             JsonNode valueNode = params.get("value");
             
-            Context context = connection.getContextManager().get(path);
+            Context context = connection.executeWithTimeout(() -> {
+                return connection.getContextManager().get(path);
+            }, 60000);
+            
+            if (context == null) {
+                throw new McpException(
+                    com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                    "Context not found: " + path
+                );
+            }
             
             Object value;
             if (valueNode.isNull()) {
@@ -107,7 +116,13 @@ public class SetVariableFieldTool implements McpTool {
                 value = valueNode.asText();
             }
             
-            context.setVariableField(variableName, fieldName, value, null);
+            // Use CallerController for setting variable field
+            connection.executeWithTimeout(() -> {
+                com.tibbo.aggregate.common.context.CallerController caller = 
+                    context.getContextManager().getCallerController();
+                context.setVariableField(variableName, fieldName, value, caller);
+                return null;
+            }, 60000);
             
             ObjectNode result = instance.objectNode();
             result.put("success", true);
@@ -118,6 +133,12 @@ public class SetVariableFieldTool implements McpTool {
             throw new McpException(
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                 "Failed to set variable field: " + e.getMessage()
+            );
+        } catch (Exception e) {
+            String errorMessage = com.tibbo.aggregate.mcp.util.ErrorHandler.extractErrorMessage(e);
+            throw new McpException(
+                com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                "Failed to set variable field: " + errorMessage
             );
         }
     }

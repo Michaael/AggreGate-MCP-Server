@@ -133,34 +133,52 @@ public class McpProtocolHandler {
     }
     
     private void sendResponse(Object id, JsonNode result) {
-        ObjectNode response = objectMapper.createObjectNode();
-        response.put("jsonrpc", "2.0");
-        response.put("id", objectMapper.valueToTree(id));
-        response.set("result", result);
-        
-        writer.println(objectMapper.valueToTree(response));
-        writer.flush();
+        try {
+            ObjectNode response = objectMapper.createObjectNode();
+            response.put("jsonrpc", "2.0");
+            response.put("id", objectMapper.valueToTree(id));
+            response.set("result", result);
+            
+            String responseJson = objectMapper.writeValueAsString(response);
+            writer.println(responseJson);
+            writer.flush();
+        } catch (Exception e) {
+            // If response sending fails, try to send error
+            try {
+                sendError(id, McpError.INTERNAL_ERROR, "Failed to send response: " + e.getMessage(), null);
+            } catch (Exception e2) {
+                // If even error sending fails, log to stderr
+                System.err.println("Critical: Failed to send response or error: " + e.getMessage() + ", " + e2.getMessage());
+            }
+        }
     }
     
     private void sendError(Object id, int code, String message, Object data) {
-        ObjectNode response = objectMapper.createObjectNode();
-        response.put("jsonrpc", "2.0");
-        if (id != null) {
-            response.put("id", objectMapper.valueToTree(id));
-        } else {
-            response.putNull("id");
+        try {
+            ObjectNode response = objectMapper.createObjectNode();
+            response.put("jsonrpc", "2.0");
+            if (id != null) {
+                response.put("id", objectMapper.valueToTree(id));
+            } else {
+                response.putNull("id");
+            }
+            
+            ObjectNode error = objectMapper.createObjectNode();
+            error.put("code", code);
+            error.put("message", message);
+            if (data != null) {
+                error.set("data", objectMapper.valueToTree(data));
+            }
+            response.set("error", error);
+            
+            String responseJson = objectMapper.writeValueAsString(response);
+            writer.println(responseJson);
+            writer.flush();
+        } catch (Exception e) {
+            // If error sending fails, log to stderr
+            System.err.println("Critical: Failed to send error response: " + e.getMessage());
+            System.err.println("Original error: code=" + code + ", message=" + message);
         }
-        
-        ObjectNode error = objectMapper.createObjectNode();
-        error.put("code", code);
-        error.put("message", message);
-        if (data != null) {
-            error.set("data", objectMapper.valueToTree(data));
-        }
-        response.set("error", error);
-        
-        writer.println(objectMapper.valueToTree(response));
-        writer.flush();
     }
 }
 

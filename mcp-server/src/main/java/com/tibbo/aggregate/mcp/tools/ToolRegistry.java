@@ -106,6 +106,8 @@ public class ToolRegistry {
         register(new CreateWidgetTool());
         register(new SetWidgetTemplateTool());
         
+        // Note: SetWidgetTemplateTool is registered but may need to be called via aggregate_set_widget_template
+        
         // Dashboard tools
         register(new CreateDashboardTool());
         register(new AddDashboardElementTool());

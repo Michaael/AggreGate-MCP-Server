@@ -147,7 +147,7 @@ public class CreateFunctionTool implements McpTool {
             TableFormat inputFormat = null;
             TableFormat outputFormat = null;
             
-            if (params.has("inputFormat")) {
+            if (params.has("inputFormat") && !params.get("inputFormat").isNull()) {
                 try {
                     // Try to parse as encoded format string
                     String formatStr = params.get("inputFormat").asText();
@@ -159,8 +159,8 @@ public class CreateFunctionTool implements McpTool {
                             // Use TableFormat constructor with format string and encoding settings
                             inputFormat = new TableFormat(innerFormat, new com.tibbo.aggregate.common.datatable.encoding.ClassicEncodingSettings(false), false);
                         } else {
-                            // Standard format parsing
-                            inputFormat = new TableFormat(formatStr, null, false);
+                            // Standard format parsing - use (0, Integer.MAX_VALUE) for functions
+                            inputFormat = new TableFormat(0, Integer.MAX_VALUE, formatStr);
                         }
                     }
                 } catch (Exception e) {
@@ -175,22 +175,22 @@ public class CreateFunctionTool implements McpTool {
             if (inputFormat == null) {
                 if ("calculate".equals(functionName) || "calculator".equals(functionName)) {
                     // Default format for calculator: action (String), arg1 (Double), arg2 (Double)
-                    inputFormat = new TableFormat();
+                    inputFormat = new TableFormat(0, Integer.MAX_VALUE);
                     inputFormat.addField("<action><S><D=Action>");
                     inputFormat.addField("<arg1><E><D=Argument 1>");
                     inputFormat.addField("<arg2><E><D=Argument 2>");
                 } else if ("addNumbers".equals(functionName) || functionType == com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_EXPRESSION) {
                     // Default format for expression functions: arg1 (Double), arg2 (Double)
-                    inputFormat = new TableFormat();
+                    inputFormat = new TableFormat(0, Integer.MAX_VALUE);
                     inputFormat.addField("<arg1><E><D=Argument 1>");
                     inputFormat.addField("<arg2><E><D=Argument 2>");
                 } else {
                     // Empty format by default
-                    inputFormat = new TableFormat();
+                    inputFormat = new TableFormat(0, Integer.MAX_VALUE);
                 }
             }
             
-            if (params.has("outputFormat")) {
+            if (params.has("outputFormat") && !params.get("outputFormat").isNull()) {
                 try {
                     String formatStr = params.get("outputFormat").asText();
                     if (formatStr != null && !formatStr.isEmpty()) {
@@ -201,8 +201,8 @@ public class CreateFunctionTool implements McpTool {
                             // Use TableFormat constructor with format string and encoding settings
                             outputFormat = new TableFormat(innerFormat, new com.tibbo.aggregate.common.datatable.encoding.ClassicEncodingSettings(false), false);
                         } else {
-                            // Standard format parsing
-                            outputFormat = new TableFormat(formatStr, null, false);
+                            // Standard format parsing - use (0, Integer.MAX_VALUE) for functions
+                            outputFormat = new TableFormat(0, Integer.MAX_VALUE, formatStr);
                         }
                     }
                 } catch (Exception e) {
@@ -218,11 +218,11 @@ public class CreateFunctionTool implements McpTool {
                 if ("calculate".equals(functionName) || "calculator".equals(functionName) || 
                     "addNumbers".equals(functionName) || functionType == com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_EXPRESSION) {
                     // Default format for calculator/expression output: result (Double)
-                    outputFormat = new TableFormat();
+                    outputFormat = new TableFormat(0, Integer.MAX_VALUE);
                     outputFormat.addField("<result><E><D=Result>");
                 } else {
                     // Empty format by default
-                    outputFormat = new TableFormat();
+                    outputFormat = new TableFormat(0, Integer.MAX_VALUE);
                 }
             }
             
@@ -544,7 +544,8 @@ public class CreateFunctionTool implements McpTool {
                 }
                 
                 if (verifyFd == null) {
-                    // Try to check in modelFunctions variable as fallback
+                    // Function might still be created but not yet available through getFunctionDefinition
+                    // Check if it exists in modelFunctions variable as fallback
                     try {
                         com.tibbo.aggregate.common.context.CallerController caller = 
                             context.getContextManager().getCallerController();

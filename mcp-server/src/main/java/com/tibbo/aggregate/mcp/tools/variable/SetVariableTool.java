@@ -133,29 +133,14 @@ public class SetVariableTool implements McpTool {
                     // For variables with maxRecords=1, ALWAYS use setVariableField to avoid "maximum number of records is reached" error
                     // Check both maxRecords and if it's a single-record format
                     if ((maxRecords == 1 || existingFormat.isSingleRecord()) && newRecordCount > 0) {
-                        if (existingRecordCount > 0) {
-                            // Update existing record using setVariableField
-                            com.tibbo.aggregate.common.datatable.DataRecord newRecord = newValue.getRecord(0);
-                            for (int fieldIndex = 0; fieldIndex < existingFormat.getFieldCount(); fieldIndex++) {
-                                String fieldName = existingFormat.getField(fieldIndex).getName();
-                                if (newRecord.hasField(fieldName)) {
-                                    Object fieldValue = newRecord.getValue(fieldName);
-                                    context.setVariableField(name, fieldName, fieldValue, caller);
-                                }
+                        // Always use setVariableField for maxRecords=1 variables to avoid errors
+                        com.tibbo.aggregate.common.datatable.DataRecord newRecord = newValue.getRecord(0);
+                        for (int fieldIndex = 0; fieldIndex < existingFormat.getFieldCount(); fieldIndex++) {
+                            String fieldName = existingFormat.getField(fieldIndex).getName();
+                            if (newRecord.hasField(fieldName)) {
+                                Object fieldValue = newRecord.getValue(fieldName);
+                                context.setVariableField(name, fieldName, fieldValue, caller);
                             }
-                        } else {
-                            // No existing record - create one using setVariable with a new table (this is safe for first time)
-                            com.tibbo.aggregate.common.datatable.DataTable tempValue = new com.tibbo.aggregate.common.datatable.SimpleDataTable(existingFormat);
-                            com.tibbo.aggregate.common.datatable.DataRecord tempRecord = tempValue.addRecord();
-                            com.tibbo.aggregate.common.datatable.DataRecord newRecord = newValue.getRecord(0);
-                            for (int fieldIndex = 0; fieldIndex < existingFormat.getFieldCount(); fieldIndex++) {
-                                String fieldName = existingFormat.getField(fieldIndex).getName();
-                                if (newRecord.hasField(fieldName)) {
-                                    Object fieldValue = newRecord.getValue(fieldName);
-                                    tempRecord.setValue(fieldName, fieldValue);
-                                }
-                            }
-                            context.setVariable(name, caller, tempValue);
                         }
                         return null; // Already handled, no need to call setVariable again
                     } else {

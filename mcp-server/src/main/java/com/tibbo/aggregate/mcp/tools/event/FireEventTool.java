@@ -98,10 +98,31 @@ public class FireEventTool implements McpTool {
             }
             
             AgentContext context = agentConnection.getContext();
-            if (!context.isSynchronized()) {
+            
+            // Wait for synchronization with retries
+            int maxRetries = 10;
+            int retryDelay = 500; // milliseconds
+            boolean isSynchronized = false;
+            
+            for (int retry = 0; retry < maxRetries; retry++) {
+                if (context.isSynchronized()) {
+                    isSynchronized = true;
+                    break;
+                }
+                if (retry < maxRetries - 1) {
+                    try {
+                        Thread.sleep(retryDelay);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+            
+            if (!isSynchronized) {
                 throw new McpException(
                     com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
-                    "Agent not synchronized yet"
+                    "Agent not synchronized yet after " + (maxRetries * retryDelay) + "ms. Please wait and try again."
                 );
             }
             
