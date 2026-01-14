@@ -31,7 +31,9 @@ public class DescribeVariableTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Get a normalized description of a context variable (format, records, fields, recommended write tool)";
+        return "Get a normalized description of a context variable (format, records, fields with descriptions, recommended write tool). " +
+               "CRITICAL for AI: Always call this tool before setting a variable to understand field descriptions and requirements. " +
+               "This tool provides detailed field information including descriptions, types, nullable status, and default values.";
     }
 
     @Override
@@ -152,19 +154,79 @@ public class DescribeVariableTool implements McpTool {
                 result.put("maxRecords", format.getMaxRecords());
                 result.put("fieldCount", format.getFieldCount());
 
-                // Fields summary
+                // Fields summary with detailed information for AI
                 ArrayNode fieldsArray = instance.arrayNode();
                 for (int i = 0; i < format.getFieldCount(); i++) {
                     FieldFormat ff = format.getField(i);
                     ObjectNode f = instance.objectNode();
                     f.put("name", ff.getName());
                     f.put("type", String.valueOf(ff.getType()));
-                    if (ff.getDescription() != null) {
+                    
+                    // Type name for better AI understanding
+                    String typeName = getTypeName(ff.getType());
+                    f.put("typeName", typeName);
+                    
+                    // Description is CRITICAL for AI to understand field purpose
+                    if (ff.getDescription() != null && !ff.getDescription().isEmpty()) {
                         f.put("description", ff.getDescription());
+                    } else {
+                        f.put("description", ""); // Empty string to indicate no description
                     }
+                    
+                    // Additional field properties
+                    f.put("nullable", ff.isNullable());
+                    try {
+                        Object defaultValue = ff.getDefaultValue();
+                        if (defaultValue != null) {
+                            f.put("hasDefault", true);
+                            f.put("defaultValue", defaultValue.toString());
+                        } else {
+                            f.put("hasDefault", false);
+                        }
+                    } catch (Exception e) {
+                        // Ignore if default value cannot be retrieved
+                        f.put("hasDefault", false);
+                    }
+                    
+                    // Field format string for reference
+                    f.put("formatString", ff.toString());
+                    
                     fieldsArray.add(f);
                 }
                 result.set("fields", fieldsArray);
+                
+                // Add AI guidance for setting this variable
+                ObjectNode aiGuidance = instance.objectNode();
+                aiGuidance.put("note", "Before setting this variable, review all field descriptions to understand their purpose and requirements.");
+                if (format.getFieldCount() > 0) {
+                    ArrayNode requiredFields = instance.arrayNode();
+                    ArrayNode optionalFields = instance.arrayNode();
+                    for (int i = 0; i < format.getFieldCount(); i++) {
+                        FieldFormat ff = format.getField(i);
+                        try {
+                            Object defaultValue = ff.getDefaultValue();
+                            if (!ff.isNullable() && defaultValue == null) {
+                                requiredFields.add(ff.getName());
+                            } else {
+                                optionalFields.add(ff.getName());
+                            }
+                        } catch (Exception e) {
+                            // If we can't determine default, assume required if not nullable
+                            if (!ff.isNullable()) {
+                                requiredFields.add(ff.getName());
+                            } else {
+                                optionalFields.add(ff.getName());
+                            }
+                        }
+                    }
+                    if (requiredFields.size() > 0) {
+                        aiGuidance.set("requiredFields", requiredFields);
+                    }
+                    if (optionalFields.size() > 0) {
+                        aiGuidance.set("optionalFields", optionalFields);
+                    }
+                }
+                result.set("aiGuidance", aiGuidance);
 
                 boolean singleRecord = format.getMaxRecords() == 1 || format.isSingleRecord();
                 boolean singleField = format.getFieldCount() == 1;
@@ -194,6 +256,37 @@ public class DescribeVariableTool implements McpTool {
                 com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                 "Failed to describe variable: " + errorMessage
             );
+        }
+    }
+    
+    /**
+     * Get human-readable type name for AI understanding
+     */
+    private String getTypeName(char type) {
+        switch (type) {
+            case FieldFormat.STRING_FIELD:
+                return "String";
+            case FieldFormat.INTEGER_FIELD:
+                return "Integer";
+            case FieldFormat.LONG_FIELD:
+                return "Long";
+            case FieldFormat.FLOAT_FIELD:
+                return "Float";
+            case FieldFormat.DOUBLE_FIELD:
+                return "Number";
+            case FieldFormat.BOOLEAN_FIELD:
+                return "Boolean";
+            case FieldFormat.DATATABLE_FIELD:
+                return "DataTable";
+            case FieldFormat.DATE_FIELD:
+                return "Date";
+            default:
+                // Try to get type name from FieldFormat if available
+                try {
+                    return String.valueOf(type);
+                } catch (Exception e) {
+                    return "Unknown";
+                }
         }
     }
 }

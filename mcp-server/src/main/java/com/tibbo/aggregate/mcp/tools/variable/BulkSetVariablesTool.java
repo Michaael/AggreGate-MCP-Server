@@ -111,7 +111,7 @@ public class BulkSetVariablesTool implements McpTool {
 
         ObjectNode result = instance.objectNode();
         result.put("path", path);
-        result.set("items", results);
+        result.set("results", results);  // Fixed: should be "results" not "items"
 
         return result;
     }

@@ -23,7 +23,9 @@ public class SetVariableFieldTool implements McpTool {
     
     @Override
     public String getDescription() {
-        return "Set a specific field value of a context variable";
+        return "Set a specific field value of a context variable. " +
+               "CRITICAL for AI: Before using this tool, call aggregate_describe_variable to understand field descriptions, types, and requirements. " +
+               "Field descriptions provide important context about what each field represents and how it should be filled.";
     }
     
     @Override

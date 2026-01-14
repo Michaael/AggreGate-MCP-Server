@@ -146,6 +146,11 @@ public class CreateFunctionTool implements McpTool {
             int functionType = params.has("functionType") ? params.get("functionType").asInt() : 
                 com.tibbo.aggregate.common.server.ModelContextConstants.FUNCTION_TYPE_JAVA;
             String expression = params.has("expression") ? params.get("expression").asText() : null;
+            // Fix triple brackets issue (<<< becomes <<, >>> becomes >>)
+            // This is a workaround for JSON serialization artifact
+            if (expression != null && expression.contains("<<<")) {
+                expression = expression.replace("<<<", "<<").replace(">>>", ">>");
+            }
             String query = params.has("query") ? params.get("query").asText() : null;
             
             if (connection.getContextManager() == null) {
@@ -432,7 +437,18 @@ public class CreateFunctionTool implements McpTool {
                         }
                         
                         if (exists) {
-                            throw new RuntimeException("Function already exists: " + functionName);
+                            // Update existing function instead of throwing error
+                            // Find the existing record and update it
+                            for (int i = 0; i < modelFunctions.getRecordCount(); i++) {
+                                com.tibbo.aggregate.common.datatable.DataRecord rec = modelFunctions.getRecord(i);
+                                if (functionName.equals(rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_NAME))) {
+                                    // Update existing record instead of creating new one
+                                    // Remove old record and add new one with updated data
+                                    modelFunctions.removeRecord(i);
+                                    break;
+                                }
+                            }
+                            // Continue to create new record (will be added below)
                         }
                         
                         // Add new record

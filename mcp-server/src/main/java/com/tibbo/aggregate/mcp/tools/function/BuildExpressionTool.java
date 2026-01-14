@@ -87,34 +87,28 @@ public class BuildExpressionTool implements McpTool {
         
         try {
             // Build inputFormat (WITHOUT <<>>)
+            // Note: Descriptions are stored separately, not in format string
             StringBuilder inputFormatBuilder = new StringBuilder();
             ArrayNode inputFields = (ArrayNode) params.get("inputFields");
             for (JsonNode field : inputFields) {
                 String name = field.get("name").asText();
                 String type = field.get("type").asText().toUpperCase();
-                String description = field.has("description") ? field.get("description").asText() : null;
-                
+                // Don't add description to format - it's handled separately by AggreGate
                 inputFormatBuilder.append("<").append(name).append(">");
                 inputFormatBuilder.append("<").append(type).append(">");
-                if (description != null && !description.isEmpty()) {
-                    inputFormatBuilder.append("<D=").append(description).append(">");
-                }
             }
             String inputFormat = inputFormatBuilder.toString();
             
             // Build outputFormat (WITHOUT <<>>)
+            // Note: Descriptions are stored separately, not in format string
             StringBuilder outputFormatBuilder = new StringBuilder();
             ArrayNode outputFields = (ArrayNode) params.get("outputFields");
             for (JsonNode field : outputFields) {
                 String name = field.get("name").asText();
                 String type = field.get("type").asText().toUpperCase();
-                String description = field.has("description") ? field.get("description").asText() : null;
-                
+                // Don't add description to format - it's handled separately by AggreGate
                 outputFormatBuilder.append("<").append(name).append(">");
                 outputFormatBuilder.append("<").append(type).append(">");
-                if (description != null && !description.isEmpty()) {
-                    outputFormatBuilder.append("<D=").append(description).append(">");
-                }
             }
             String outputFormat = outputFormatBuilder.toString();
             

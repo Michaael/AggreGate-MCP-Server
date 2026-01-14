@@ -84,11 +84,18 @@ public class McpServer implements McpRequestHandler {
         ObjectNode contentItem = instance.objectNode();
         contentItem.put("type", "text");
         
-        // Serialize the result to JSON string
-        if (toolResult.isTextual()) {
-            contentItem.put("text", toolResult.asText());
-        } else {
-            contentItem.put("text", toolResult.toString());
+        // Serialize the result to JSON string using ObjectMapper for proper JSON encoding
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String jsonString = objectMapper.writeValueAsString(toolResult);
+            contentItem.put("text", jsonString);
+        } catch (Exception e) {
+            // Fallback to toString if serialization fails
+            if (toolResult.isTextual()) {
+                contentItem.put("text", toolResult.asText());
+            } else {
+                contentItem.put("text", toolResult.toString());
+            }
         }
         
         content.add(contentItem);

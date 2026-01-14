@@ -32,6 +32,7 @@ import com.tibbo.aggregate.mcp.tools.function.GetFunctionTool;
 import com.tibbo.aggregate.mcp.tools.function.TestFunctionTool;
 import com.tibbo.aggregate.mcp.tools.function.BuildExpressionTool;
 import com.tibbo.aggregate.mcp.tools.function.ValidateExpressionTool;
+import com.tibbo.aggregate.mcp.tools.function.FixFunctionParametersTool;
 import com.tibbo.aggregate.mcp.tools.user.CreateUserTool;
 import com.tibbo.aggregate.mcp.tools.user.DeleteUserTool;
 import com.tibbo.aggregate.mcp.tools.user.ListUsersTool;
@@ -46,6 +47,7 @@ import com.tibbo.aggregate.mcp.tools.variable.SetVariableTool;
 import com.tibbo.aggregate.mcp.tools.variable.DescribeVariableTool;
 import com.tibbo.aggregate.mcp.tools.variable.SetVariableSmartTool;
 import com.tibbo.aggregate.mcp.tools.variable.BulkSetVariablesTool;
+import com.tibbo.aggregate.mcp.tools.variable.GetOrCreateVariableTool;
 import com.tibbo.aggregate.mcp.tools.action.ExecuteActionTool;
 import com.tibbo.aggregate.mcp.tools.widget.CreateWidgetTool;
 import com.tibbo.aggregate.mcp.tools.widget.SetWidgetTemplateTool;
@@ -99,6 +101,7 @@ public class ToolRegistry {
         register(new DescribeVariableTool());
         register(new SetVariableSmartTool());
         register(new BulkSetVariablesTool());
+        register(new GetOrCreateVariableTool());
         
         // Function tools
         register(new CallFunctionTool());
@@ -108,6 +111,7 @@ public class ToolRegistry {
         register(new TestFunctionTool());
         register(new BuildExpressionTool());
         register(new ValidateExpressionTool());
+        register(new FixFunctionParametersTool());
         
         // Device tools
         register(new CreateDeviceTool());

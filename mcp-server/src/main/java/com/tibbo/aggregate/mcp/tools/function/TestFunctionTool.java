@@ -134,21 +134,72 @@ public class TestFunctionTool implements McpTool {
                     SimpleDataTable simple = new SimpleDataTable(inputFormat);
                     DataRecord rec = simple.addRecord();
 
+                    // First, collect all provided parameters
+                    java.util.Map<String, JsonNode> providedParams = new java.util.HashMap<>();
                     java.util.Iterator<java.util.Map.Entry<String, JsonNode>> fields = ((com.fasterxml.jackson.databind.node.ObjectNode) paramJson).fields();
                     while (fields.hasNext()) {
                         java.util.Map.Entry<String, JsonNode> entry = fields.next();
-                        String fieldName = entry.getKey();
-                        JsonNode valueNode = entry.getValue();
-                        if (rec.hasField(fieldName)) {
+                        providedParams.put(entry.getKey(), entry.getValue());
+                    }
+                    
+                    // Set values for all fields in inputFormat
+                    java.util.List<String> missingFields = new java.util.ArrayList<>();
+                    java.util.List<String> setFields = new java.util.ArrayList<>();
+                    
+                    for (int i = 0; i < inputFormat.getFieldCount(); i++) {
+                        com.tibbo.aggregate.common.datatable.FieldFormat fieldFormat = inputFormat.getField(i);
+                        String fieldName = fieldFormat.getName();
+                        
+                        if (providedParams.containsKey(fieldName)) {
+                            // Field is provided - set it
+                            JsonNode valueNode = providedParams.get(fieldName);
                             Object value = convertJsonValue(valueNode);
                             rec.setValue(fieldName, value);
+                            setFields.add(fieldName);
+                        } else {
+                            // Field is missing - add to missing list
+                            missingFields.add(fieldName);
+                            // Set default value based on field type
+                            Object defaultValue = getDefaultValue(fieldFormat);
+                            if (defaultValue != null) {
+                                rec.setValue(fieldName, defaultValue);
+                            }
                         }
                     }
+                    
+                    // Add diagnostic information
+                    if (!missingFields.isEmpty()) {
+                        result.put("parameterWarning", true);
+                        result.put("missingFields", instance.arrayNode().addAll(
+                            missingFields.stream()
+                                .map(f -> instance.textNode(f))
+                                .collect(java.util.stream.Collectors.toList())
+                        ));
+                        result.put("providedFields", instance.arrayNode().addAll(
+                            setFields.stream()
+                                .map(f -> instance.textNode(f))
+                                .collect(java.util.stream.Collectors.toList())
+                        ));
+                    }
+                    
                     paramTable = simple;
                 } else {
                     // Assume proper DataTable JSON
                     paramTable = DataTableConverter.fromJson(paramJson);
                 }
+            } else if (inputFormat != null && inputFormat.getFieldCount() > 0) {
+                // No parameters provided but function expects them
+                result.put("parameterWarning", true);
+                result.put("missingFields", instance.arrayNode());
+                java.util.List<String> requiredFields = new java.util.ArrayList<>();
+                for (int i = 0; i < inputFormat.getFieldCount(); i++) {
+                    requiredFields.add(inputFormat.getField(i).getName());
+                }
+                result.set("requiredFields", instance.arrayNode().addAll(
+                    requiredFields.stream()
+                        .map(f -> instance.textNode(f))
+                        .collect(java.util.stream.Collectors.toList())
+                ));
             }
 
             // Call function and capture result / diagnostics
@@ -201,6 +252,27 @@ public class TestFunctionTool implements McpTool {
             return valueNode.asBoolean();
         } else {
             return valueNode.asText();
+        }
+    }
+    
+    /**
+     * Get default value for a field based on its type
+     */
+    private static Object getDefaultValue(com.tibbo.aggregate.common.datatable.FieldFormat fieldFormat) {
+        char fieldType = fieldFormat.getType();
+        switch (fieldType) {
+            case com.tibbo.aggregate.common.datatable.FieldFormat.STRING_FIELD:
+                return "";
+            case com.tibbo.aggregate.common.datatable.FieldFormat.INTEGER_FIELD:
+            case com.tibbo.aggregate.common.datatable.FieldFormat.LONG_FIELD:
+                return 0;
+            case com.tibbo.aggregate.common.datatable.FieldFormat.FLOAT_FIELD:
+            case com.tibbo.aggregate.common.datatable.FieldFormat.DOUBLE_FIELD:
+                return 0.0;
+            case com.tibbo.aggregate.common.datatable.FieldFormat.BOOLEAN_FIELD:
+                return false;
+            default:
+                return null;
         }
     }
 }

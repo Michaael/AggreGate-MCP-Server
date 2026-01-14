@@ -32,7 +32,9 @@ public class SetVariableSmartTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Smart setter for context variables that automatically chooses the correct write strategy";
+        return "Smart setter for context variables that automatically chooses the correct write strategy. " +
+               "CRITICAL for AI: Before using this tool, call aggregate_describe_variable to understand field descriptions, types, and requirements. " +
+               "Field descriptions provide important context about what each field represents and how it should be filled.";
     }
 
     @Override

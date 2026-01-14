@@ -24,8 +24,23 @@
 ### 1. Порядок операций (ОБЯЗАТЕЛЬНО!)
 ```
 aggregate_connect → aggregate_login → aggregate_create_context → 
+[Если относительная модель: настройка containerType и objectType] →
 aggregate_create_variable → aggregate_create_event → ...
 ```
+
+### 1.1. Типы моделей (ВАЖНО!)
+
+**Относительная модель** (по умолчанию, type=0):
+- Много экземпляров (по одному на объект)
+- ОБЯЗАТЕЛЬНО: `containerType="devices"`, `objectType="device"`
+- Привязки: `{.:sine}` (относительные ссылки!)
+
+**Абсолютная модель** (type=1):
+- Один экземпляр
+- Привязки: `{users.admin.devices.device1:sine}`
+
+**Экземплярная модель** (type=2):
+- Создается по требованию
 
 ### 2. Установка значений переменных
 **❌ НЕПРАВИЛЬНО:**
@@ -98,6 +113,23 @@ aggregate_create_variable → aggregate_create_event → ...
 ```
 
 ### Создание Expression функции
+
+**Для одного поля:**
+```json
+{
+  "tool": "aggregate_create_function",
+  "parameters": {
+    "path": "users.admin.models.my_model",
+    "functionName": "double",
+    "functionType": 1,
+    "inputFormat": "<value><E>",
+    "outputFormat": "<result><E>",
+    "expression": "table(\"<<result><E>>\", {value} * 2)"
+  }
+}
+```
+
+**Для нескольких полей (ИСПОЛЬЗУЙТЕ <<>>):**
 ```json
 {
   "tool": "aggregate_create_function",
@@ -105,12 +137,14 @@ aggregate_create_variable → aggregate_create_event → ...
     "path": "users.admin.models.my_model",
     "functionName": "calculate",
     "functionType": 1,
-    "inputFormat": "<a><E><b><E>",
-    "outputFormat": "<result><E>",
+    "inputFormat": "<<a><E><b><E>>",
+    "outputFormat": "<<result><E>>",
     "expression": "table(\"<<result><E>>\", ({a} + {b}) / 2)"
   }
 }
 ```
+
+**⚠️ ВАЖНО:** Для функций с несколькими полями используйте формат С `<<>>` скобками, иначе AggreGate потеряет поля после первого!
 
 ## ❌ Типичные ошибки
 
