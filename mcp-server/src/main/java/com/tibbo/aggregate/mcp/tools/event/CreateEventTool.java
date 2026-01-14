@@ -31,7 +31,10 @@ public class CreateEventTool implements McpTool {
     
     @Override
     public String getDescription() {
-        return "Create an event in a context (supports model context)";
+        return "Create an event in a context (supports model context). " +
+               "⚠️ CRITICAL: Events in models are NOT created automatically - you MUST create them explicitly! " +
+               "Events allow notifications about important state changes. " +
+               "See docs/AI_CONTEXT_CREATION_COMPLETE_GUIDE.md for complete guide.";
     }
     
     @Override

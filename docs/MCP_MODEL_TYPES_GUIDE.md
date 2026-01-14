@@ -171,12 +171,25 @@
 1. **ОБЯЗАТЕЛЬНО** установите:
    - `containerType = "devices"` (или другой тип контейнера)
    - `objectType = "device"` (или другой тип объекта)
+   - **Эти параметры устанавливаются автоматически при создании модели через `aggregate_create_context` с `modelType=0`, `containerType` и `objectType`**
 
-2. **В привязках используйте относительные ссылки:**
+2. **ОБЯЗАТЕЛЬНО создайте переменную для хранения данных:**
+   - Используйте `aggregate_create_variable` для создания переменной в модели
+   - Переменная должна быть `writable: true` для записи данных через привязки
+
+3. **ОБЯЗАТЕЛЬНО создайте привязку (bindings):**
+   - Используйте `aggregate_set_variable` для установки переменной `bindings`
+   - В привязках используйте относительные ссылки: `{.:variableName}`
    - ✅ ПРАВИЛЬНО: `{.:sine}`, `{.:sawtooth}`
    - ❌ НЕПРАВИЛЬНО: `{users.admin.devices.virtualDevice:sine}`
+   - Формат привязки: `{"target": ".:variableName", "expression": "{.:sourceVar1} + {.:sourceVar2}", "onevent": true}`
 
-3. **Относительные ссылки:**
+4. **ОБЯЗАТЕЛЬНО установите выражение пригодности (validityExpression):**
+   - Используйте `aggregate_set_variable_field` для установки поля `validityExpression` в переменной `childInfo`
+   - Выражение определяет, для каких объектов должна создаваться модель
+   - Пример: `"{.:sine} != null && {.:sawtooth} != null"` - модель создается только для устройств, у которых есть обе переменные
+
+5. **Относительные ссылки:**
    - `{.:variableName}` - ссылается на переменную текущего объекта (устройства), к которому привязан экземпляр модели
    - Это позволяет модели работать одинаково для всех устройств
 
@@ -194,38 +207,20 @@
 
 **Решение:**
 ```json
-// 1. Создание модели
+// 1. Создание относительной модели (параметры устанавливаются автоматически)
 {
   "tool": "aggregate_create_context",
   "parameters": {
     "parentPath": "users.admin.models",
     "name": "relativeWavesSum",
-    "description": "Относительная модель суммы Sine+Sawtooth"
+    "description": "Относительная модель суммы Sine+Sawtooth",
+    "modelType": 0,
+    "containerType": "devices",
+    "objectType": "device"
   }
 }
 
-// 2. Настройка типа модели
-{
-  "tool": "aggregate_set_variable_field",
-  "parameters": {
-    "path": "users.admin.models.relativeWavesSum",
-    "variableName": "childInfo",
-    "fieldName": "containerType",
-    "value": "devices"
-  }
-}
-
-{
-  "tool": "aggregate_set_variable_field",
-  "parameters": {
-    "path": "users.admin.models.relativeWavesSum",
-    "variableName": "childInfo",
-    "fieldName": "objectType",
-    "value": "device"
-  }
-}
-
-// 3. Создание переменной
+// 3. Создание переменной (ОБЯЗАТЕЛЬНО!)
 {
   "tool": "aggregate_create_variable",
   "parameters": {
@@ -237,7 +232,7 @@
   }
 }
 
-// 4. Создание привязки (ВАЖНО: относительные ссылки!)
+// 4. Создание привязки (ОБЯЗАТЕЛЬНО! ВАЖНО: относительные ссылки!)
 {
   "tool": "aggregate_set_variable",
   "parameters": {
@@ -248,8 +243,27 @@
         "target": ".:wavesSum",
         "expression": "{.:sine} + {.:sawtooth}",
         "onevent": true
-      }]
+      }],
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      }
     }
+  }
+}
+
+// 5. Установка выражения пригодности (ОБЯЗАТЕЛЬНО для относительных моделей!)
+// Выражение определяет, для каких объектов должна создаваться модель
+{
+  "tool": "aggregate_set_variable_field",
+  "parameters": {
+    "path": "users.admin.models.relativeWavesSum",
+    "variableName": "childInfo",
+    "fieldName": "validityExpression",
+    "value": "{.:sine} != null && {.:sawtooth} != null"
   }
 }
 ```
@@ -339,11 +353,77 @@
 
 **Неправильно:** Создана модель без настройки типа
 
-**Правильно:** После создания модели установить:
+**Правильно:** При создании модели указать:
+- `modelType = 0` (относительная модель)
 - `containerType = "devices"`
 - `objectType = "device"`
 
-### ❌ Ошибка 3: Использование относительных ссылок в абсолютной модели
+Эти параметры устанавливаются автоматически при создании через `aggregate_create_context`.
+
+### ❌ Ошибка 3: Не создана переменная для записи данных
+
+**Неправильно:** Создана модель без переменной для хранения данных
+
+**Правильно:** После создания модели создать переменную:
+```json
+{
+  "tool": "aggregate_create_variable",
+  "parameters": {
+    "path": "users.admin.models.relativeModel",
+    "variableName": "result",
+    "format": "<result><E>",
+    "writable": true
+  }
+}
+```
+
+### ❌ Ошибка 4: Не создана привязка (bindings)
+
+**Неправильно:** Создана модель без привязки для записи данных
+
+**Правильно:** После создания переменной создать привязку:
+```json
+{
+  "tool": "aggregate_set_variable",
+  "parameters": {
+    "path": "users.admin.models.relativeModel",
+    "name": "bindings",
+    "value": {
+      "records": [{
+        "target": ".:result",
+        "expression": "{.:sourceVar1} + {.:sourceVar2}",
+        "onevent": true
+      }],
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      }
+    }
+  }
+}
+```
+
+### ❌ Ошибка 5: Не установлено выражение пригодности (validityExpression)
+
+**Неправильно:** Создана относительная модель без выражения пригодности
+
+**Правильно:** Установить выражение пригодности для определения, для каких объектов создавать модель:
+```json
+{
+  "tool": "aggregate_set_variable_field",
+  "parameters": {
+    "path": "users.admin.models.relativeModel",
+    "variableName": "childInfo",
+    "fieldName": "validityExpression",
+    "value": "{.:sourceVar1} != null && {.:sourceVar2} != null"
+  }
+}
+```
+
+### ❌ Ошибка 6: Использование относительных ссылок в абсолютной модели
 
 **Неправильно:**
 ```json

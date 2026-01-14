@@ -26,7 +26,10 @@ public class SetVariableTool implements McpTool {
     public String getDescription() {
         return "Set the value of a context variable. " +
                "CRITICAL for AI: Before using this tool, call aggregate_describe_variable to understand field descriptions, types, and requirements. " +
-               "Field descriptions provide important context about what each field represents and how it should be filled.";
+               "Field descriptions provide important context about what each field represents and how it should be filled. " +
+               "⚠️ CRITICAL for models: Use this tool to set 'bindings' variable to create bindings between model and device variables. " +
+               "For relative models use relative references {.:var} in expression, for absolute models use absolute paths {context:var}. " +
+               "See docs/AI_CONTEXT_CREATION_COMPLETE_GUIDE.md for complete guide on bindings and expressions.";
     }
     
     @Override

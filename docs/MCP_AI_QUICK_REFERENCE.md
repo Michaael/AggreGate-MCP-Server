@@ -30,9 +30,13 @@ aggregate_create_variable → aggregate_create_event → ...
 
 ### 1.1. Типы моделей (ВАЖНО!)
 
-**Относительная модель** (по умолчанию, type=0):
+**Относительная модель** (modelType=0):
 - Много экземпляров (по одному на объект)
-- ОБЯЗАТЕЛЬНО: `containerType="devices"`, `objectType="device"`
+- ОБЯЗАТЕЛЬНО при создании: `modelType=0`, `containerType="devices"`, `objectType="device"`
+- ОБЯЗАТЕЛЬНО после создания:
+  1. Создать переменную (`aggregate_create_variable` с `writable: true`)
+  2. Создать привязку (`aggregate_set_variable` с `bindings`)
+  3. Установить выражение пригодности (`aggregate_set_variable_field` в `childInfo.validityExpression`)
 - Привязки: `{.:sine}` (относительные ссылки!)
 
 **Абсолютная модель** (type=1):

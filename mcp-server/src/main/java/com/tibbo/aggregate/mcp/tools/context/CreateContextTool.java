@@ -30,7 +30,8 @@ public class CreateContextTool implements McpTool {
         return "Create a new context (model) in AggreGate. " +
                "Supports three model types: relative (default, type=0), absolute (type=1), and instance (type=2). " +
                "For relative models, automatically configures containerType and objectType. " +
-               "See docs/MCP_MODEL_TYPES_GUIDE.md for details.";
+               "⚠️ CRITICAL: After creating a model, you MUST create variables, events, and bindings! " +
+               "See docs/MCP_MODEL_TYPES_GUIDE.md and docs/AI_CONTEXT_CREATION_COMPLETE_GUIDE.md for complete guide.";
     }
     
     @Override
@@ -113,34 +114,9 @@ public class CreateContextTool implements McpTool {
             String name = params.get("name").asText();
             String description = params.has("description") ? params.get("description").asText() : null;
             
-            // Model type parameters
-            int modelType = params.has("modelType") ? params.get("modelType").asInt() : 0; // 0=relative (default)
-            String containerType = params.has("containerType") ? params.get("containerType").asText() : null;
-            String objectType = params.has("objectType") ? params.get("objectType").asText() : null;
-            
-            // Validate relative model parameters
-            if (modelType == 0) { // Relative model
-                if (containerType == null || containerType.isEmpty()) {
-                    throw new McpException(
-                        com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
-                        "For relative models (modelType=0), containerType is required. " +
-                        "Common value: 'devices' for device models. " +
-                        "See docs/MCP_MODEL_TYPES_GUIDE.md for details."
-                    );
-                }
-                if (objectType == null || objectType.isEmpty()) {
-                    throw new McpException(
-                        com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
-                        "For relative models (modelType=0), objectType is required. " +
-                        "Common value: 'device' for device models. " +
-                        "See docs/MCP_MODEL_TYPES_GUIDE.md for details."
-                    );
-                }
-            }
-            
             ContextManager cm = connection.getContextManager();
             
-            // Get parent context
+            // Get parent context FIRST to check its type
             Context parentContext = connection.executeWithTimeout(() -> {
                 return cm.get(parentPath);
             }, 60000);
@@ -150,6 +126,49 @@ public class CreateContextTool implements McpTool {
                     com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
                     "Parent context not found: " + parentPath
                 );
+            }
+            
+            // Check if parent context is a models context
+            // Only models contexts require modelType, containerType, objectType
+            boolean isModelsContext = parentPath.contains(".models") || parentPath.endsWith("models");
+            
+            // Model type parameters - only relevant for models contexts
+            int modelType;
+            final String containerType;
+            final String objectType;
+            
+            if (isModelsContext) {
+                // For models contexts, modelType, containerType, objectType are relevant
+                modelType = params.has("modelType") ? params.get("modelType").asInt() : 0; // 0=relative (default)
+                containerType = params.has("containerType") ? params.get("containerType").asText() : null;
+                objectType = params.has("objectType") ? params.get("objectType").asText() : null;
+                
+                // Validate relative model parameters - only for models contexts
+                if (modelType == 0) { // Relative model
+                    if (containerType == null || containerType.isEmpty()) {
+                        throw new McpException(
+                            com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
+                            "For relative models (modelType=0), containerType is required. " +
+                            "Common value: 'devices' for device models. " +
+                            "See docs/MCP_MODEL_TYPES_GUIDE.md for details."
+                        );
+                    }
+                    if (objectType == null || objectType.isEmpty()) {
+                        throw new McpException(
+                            com.tibbo.aggregate.mcp.protocol.McpError.INVALID_PARAMS,
+                            "For relative models (modelType=0), objectType is required. " +
+                            "Common value: 'device' for device models. " +
+                            "See docs/MCP_MODEL_TYPES_GUIDE.md for details."
+                        );
+                    }
+                }
+            } else {
+                // For non-models contexts (alerts, widgets, dashboards, etc.), 
+                // modelType, containerType, objectType are not used
+                // Set default values to avoid issues later
+                modelType = 1; // Use absolute model type as default (won't be used anyway)
+                containerType = null;
+                objectType = null;
             }
             
             // Check if context already exists
@@ -253,7 +272,7 @@ public class CreateContextTool implements McpTool {
                         result.put("description", description);
                     }
                     result.put("note", "Context creation may require additional verification");
-                    if (modelType == 0) {
+                    if (isModelsContext && modelType == 0) {
                         result.put("modelType", modelType);
                         result.put("modelTypeName", "relative");
                         result.put("warning", "For relative models, configure containerType and objectType after verification using aggregate_set_variable_field on childInfo variable.");
@@ -279,9 +298,10 @@ public class CreateContextTool implements McpTool {
                     // Step 2: Wait for type to be applied (CRITICAL - AggreGate needs time to process)
                     Thread.sleep(500);
                     
-                    // Step 3: For relative models, set containerType and objectType
+                    // Step 3: For relative models in models contexts, set containerType and objectType
                     // Only after type is set and applied
-                    if (modelType == 0 && containerType != null && objectType != null) {
+                    // Only configure for models contexts
+                    if (isModelsContext && modelType == 0 && containerType != null && objectType != null) {
                         // Set containerType
                         connection.executeWithTimeout(() -> {
                             newContext.setVariableField("childInfo", "containerType", containerType, caller);
@@ -317,20 +337,22 @@ public class CreateContextTool implements McpTool {
                     result.put("description", contextDescription);
                 }
                 
-                // Add model type information to result
-                if (modelType == 0) {
-                    result.put("modelType", modelType);
-                    result.put("modelTypeName", "relative");
-                    result.put("containerType", containerType);
-                    result.put("objectType", objectType);
-                    result.put("note", "Relative model configured. Use relative references {.:var} in bindings, not absolute paths.");
-                } else if (modelType == 1) {
-                    result.put("modelType", modelType);
-                    result.put("modelTypeName", "absolute");
-                    result.put("note", "Absolute model. Use absolute paths {context:var} in bindings.");
-                } else if (modelType == 2) {
-                    result.put("modelType", modelType);
-                    result.put("modelTypeName", "instance");
+                // Add model type information to result - only for models contexts
+                if (isModelsContext) {
+                    if (modelType == 0) {
+                        result.put("modelType", modelType);
+                        result.put("modelTypeName", "relative");
+                        result.put("containerType", containerType);
+                        result.put("objectType", objectType);
+                        result.put("note", "Relative model configured. Use relative references {.:var} in bindings, not absolute paths.");
+                    } else if (modelType == 1) {
+                        result.put("modelType", modelType);
+                        result.put("modelTypeName", "absolute");
+                        result.put("note", "Absolute model. Use absolute paths {context:var} in bindings.");
+                    } else if (modelType == 2) {
+                        result.put("modelType", modelType);
+                        result.put("modelTypeName", "instance");
+                    }
                 }
                 
                 return result;

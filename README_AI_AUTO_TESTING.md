@@ -86,10 +86,15 @@ Python скрипт с функциями валидации:
 3. **Экземплярная** (type=2) - создается по требованию
 
 **Для относительной модели ОБЯЗАТЕЛЬНО:**
-- Установить `containerType="devices"` и `objectType="device"`
-- Использовать относительные ссылки в привязках: `{.:sine}`, а не `{users.admin.devices.device1:sine}`
 
-Подробнее: [docs/MCP_MODEL_TYPES_GUIDE.md](docs/MCP_MODEL_TYPES_GUIDE.md)
+1. При создании модели указать: `modelType=0`, `containerType="devices"`, `objectType="device"`
+2. Создать переменную для хранения данных (`writable: true`)
+3. Создать привязку (bindings) с относительными ссылками: `{.:sine}`, а не `{users.admin.devices.device1:sine}`
+4. Установить выражение пригодности (validityExpression) в `childInfo`
+
+Подробнее: 
+- [docs/MCP_MODEL_TYPES_GUIDE.md](docs/MCP_MODEL_TYPES_GUIDE.md)
+- [docs/MCP_RELATIVE_MODEL_COMPLETE_GUIDE.md](docs/MCP_RELATIVE_MODEL_COMPLETE_GUIDE.md)
 
 ## Ключевые правила
 
@@ -98,7 +103,7 @@ Python скрипт с функциями валидации:
 2. Проверять создание элементов (`aggregate_list_*`)
 3. **КРИТИЧНО:** Проверять inputFormat через `aggregate_get_function` - все поля должны присутствовать
 4. Для функций с множественными полями использовать формат С `<<>>` скобками
-5. Создавать привязки для моделей, работающих с устройствами
+5. **КРИТИЧНО для относительных моделей:** Создавать переменную, привязку (bindings) и устанавливать выражение пригодности (validityExpression)
 6. Использовать `aggregate_build_expression` перед созданием Expression функций
 7. Исправлять ошибки автоматически
 

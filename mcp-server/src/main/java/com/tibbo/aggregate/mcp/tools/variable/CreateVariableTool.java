@@ -35,7 +35,11 @@ public class CreateVariableTool implements McpTool {
     
     @Override
     public String getDescription() {
-        return "Create a variable in a context (supports model context)";
+        return "Create a variable in a context (supports model context). " +
+               "⚠️ CRITICAL: Variables in models are NOT created automatically - you MUST create them explicitly! " +
+               "For models, set writable=true if variables will be updated via bindings. " +
+               "Format examples: '<temperature><E>' (single value), '<name><S><value><E>' (table). " +
+               "See docs/AI_CONTEXT_CREATION_COMPLETE_GUIDE.md for complete guide.";
     }
     
     @Override
@@ -56,7 +60,10 @@ public class CreateVariableTool implements McpTool {
         
         ObjectNode format = instance.objectNode();
         format.put("type", "string");
-        format.put("description", "Variable format as TableFormat string (required)");
+        format.put("description", "Variable format as TableFormat string (required). " +
+               "Examples: '<temperature><E>' (single Float), '<status><S>' (single String), '<name><S><value><E>' (table). " +
+               "Types: S=String, I=Integer, L=Long, E=Extended/Double (recommended for numbers), D=Double, B=Boolean, T=DataTable. " +
+               "See docs/AI_CONTEXT_CREATION_COMPLETE_GUIDE.md for format details.");
         properties.set("format", format);
         
         ObjectNode description = instance.objectNode();
@@ -71,7 +78,9 @@ public class CreateVariableTool implements McpTool {
         
         ObjectNode writable = instance.objectNode();
         writable.put("type", "boolean");
-        writable.put("description", "Is variable writable (default: true)");
+        writable.put("description", "Is variable writable (default: true). " +
+               "⚠️ CRITICAL for models: Set to true if variable will be updated via bindings! " +
+               "Variables with writable=false cannot be updated through bindings.");
         writable.put("default", true);
         properties.set("writable", writable);
         
