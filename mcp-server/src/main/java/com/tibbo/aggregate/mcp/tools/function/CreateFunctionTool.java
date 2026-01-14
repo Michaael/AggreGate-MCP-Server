@@ -30,7 +30,12 @@ public class CreateFunctionTool implements McpTool {
     
     @Override
     public String getDescription() {
-        return "Create a function in a context";
+        return "Create a function in a context. " +
+               "⚠️ IMPORTANT: For Expression functions (type=1), " +
+               "ALWAYS use aggregate_build_expression first to get correct format strings, " +
+               "then aggregate_validate_expression to check syntax, " +
+               "then call this tool. " +
+               "Rules: inputFormat/outputFormat WITHOUT <<>>, expression WITH <<>> inside table().";
     }
     
     @Override
@@ -61,22 +66,38 @@ public class CreateFunctionTool implements McpTool {
         
         ObjectNode inputFormat = instance.objectNode();
         inputFormat.put("type", "string");
-        inputFormat.put("description", "Input format as TableFormat string (optional)");
+        inputFormat.put("description", "Input format as TableFormat string (optional). " +
+               "⚠️ CRITICAL RULE for Expression functions (type=1): " +
+               "inputFormat should NOT have <<>> brackets! " +
+               "CORRECT: '<value1><E><value2><E>'. " +
+               "INCORRECT: '<<value1><E><value2><E>>'. " +
+               "Use aggregate_build_expression to generate correct formats.");
         properties.set("inputFormat", inputFormat);
         
         ObjectNode outputFormat = instance.objectNode();
         outputFormat.put("type", "string");
-        outputFormat.put("description", "Output format as TableFormat string (optional)");
+        outputFormat.put("description", "Output format as TableFormat string (optional). " +
+               "⚠️ CRITICAL RULE for Expression functions (type=1): " +
+               "outputFormat should NOT have <<>> brackets! " +
+               "CORRECT: '<result><E>'. " +
+               "INCORRECT: '<<result><E>>'. " +
+               "Use aggregate_build_expression to generate correct formats.");
         properties.set("outputFormat", outputFormat);
         
         ObjectNode functionType = instance.objectNode();
         functionType.put("type", "integer");
-        functionType.put("description", "Function type: 0=Java, 1=Expression, 2=Query (default: 0)");
+        functionType.put("description", "Function type: 0=Java, 1=Expression, 2=Query (default: 0). " +
+               "For Expression functions (type=1), use aggregate_build_expression first, " +
+               "then aggregate_validate_expression before calling this tool.");
         properties.set("functionType", functionType);
         
         ObjectNode expression = instance.objectNode();
         expression.put("type", "string");
-        expression.put("description", "Expression for Expression type functions (type=1)");
+        expression.put("description", "Expression for Expression type functions (type=1). " +
+               "⚠️ CRITICAL RULE: expression MUST have <<>> brackets INSIDE table() function! " +
+               "CORRECT: 'table(\"<<result><E>>\", ({value1} + {value2}) / 2)'. " +
+               "INCORRECT: 'table(\"<result><E>\", ...)' (missing <<>>). " +
+               "Use aggregate_build_expression to generate correct expression syntax.");
         properties.set("expression", expression);
         
         ObjectNode query = instance.objectNode();

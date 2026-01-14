@@ -7,6 +7,8 @@ import com.tibbo.aggregate.mcp.connection.ConnectionManager;
 import com.tibbo.aggregate.mcp.protocol.McpException;
 import com.tibbo.aggregate.mcp.tools.agent.CreateAgentTool;
 import com.tibbo.aggregate.mcp.tools.agent.GetAgentStatusTool;
+import com.tibbo.aggregate.mcp.tools.agent.WaitAgentReadyTool;
+import com.tibbo.aggregate.mcp.tools.agent.SendAgentEventSimpleTool;
 import com.tibbo.aggregate.mcp.tools.connection.ConnectTool;
 import com.tibbo.aggregate.mcp.tools.connection.DisconnectTool;
 import com.tibbo.aggregate.mcp.tools.connection.LoginTool;
@@ -14,29 +16,48 @@ import com.tibbo.aggregate.mcp.tools.context.CreateContextTool;
 import com.tibbo.aggregate.mcp.tools.context.DeleteContextTool;
 import com.tibbo.aggregate.mcp.tools.context.GetContextTool;
 import com.tibbo.aggregate.mcp.tools.context.ListContextsTool;
+import com.tibbo.aggregate.mcp.tools.context.ListContextTreeTool;
 import com.tibbo.aggregate.mcp.tools.device.CreateDeviceTool;
 import com.tibbo.aggregate.mcp.tools.device.DeleteDeviceTool;
 import com.tibbo.aggregate.mcp.tools.device.GetDeviceStatusTool;
 import com.tibbo.aggregate.mcp.tools.device.ListDevicesTool;
+import com.tibbo.aggregate.mcp.tools.device.GetDeviceTool;
 import com.tibbo.aggregate.mcp.tools.event.CreateEventTool;
 import com.tibbo.aggregate.mcp.tools.event.FireEventTool;
+import com.tibbo.aggregate.mcp.tools.event.ListEventsTool;
 import com.tibbo.aggregate.mcp.tools.function.CallFunctionTool;
 import com.tibbo.aggregate.mcp.tools.function.CreateFunctionTool;
 import com.tibbo.aggregate.mcp.tools.function.ListFunctionsTool;
+import com.tibbo.aggregate.mcp.tools.function.GetFunctionTool;
+import com.tibbo.aggregate.mcp.tools.function.TestFunctionTool;
+import com.tibbo.aggregate.mcp.tools.function.BuildExpressionTool;
+import com.tibbo.aggregate.mcp.tools.function.ValidateExpressionTool;
 import com.tibbo.aggregate.mcp.tools.user.CreateUserTool;
 import com.tibbo.aggregate.mcp.tools.user.DeleteUserTool;
 import com.tibbo.aggregate.mcp.tools.user.ListUsersTool;
 import com.tibbo.aggregate.mcp.tools.user.UpdateUserTool;
+import com.tibbo.aggregate.mcp.tools.user.GetUserTool;
+import com.tibbo.aggregate.mcp.tools.user.UpsertUserTool;
 import com.tibbo.aggregate.mcp.tools.variable.CreateVariableTool;
 import com.tibbo.aggregate.mcp.tools.variable.GetVariableTool;
 import com.tibbo.aggregate.mcp.tools.variable.ListVariablesTool;
 import com.tibbo.aggregate.mcp.tools.variable.SetVariableFieldTool;
 import com.tibbo.aggregate.mcp.tools.variable.SetVariableTool;
+import com.tibbo.aggregate.mcp.tools.variable.DescribeVariableTool;
+import com.tibbo.aggregate.mcp.tools.variable.SetVariableSmartTool;
+import com.tibbo.aggregate.mcp.tools.variable.BulkSetVariablesTool;
 import com.tibbo.aggregate.mcp.tools.action.ExecuteActionTool;
 import com.tibbo.aggregate.mcp.tools.widget.CreateWidgetTool;
 import com.tibbo.aggregate.mcp.tools.widget.SetWidgetTemplateTool;
+import com.tibbo.aggregate.mcp.tools.widget.GetWidgetTemplateTool;
+import com.tibbo.aggregate.mcp.tools.widget.ListWidgetsTool;
 import com.tibbo.aggregate.mcp.tools.dashboard.CreateDashboardTool;
 import com.tibbo.aggregate.mcp.tools.dashboard.AddDashboardElementTool;
+import com.tibbo.aggregate.mcp.tools.dashboard.ListDashboardsTool;
+import com.tibbo.aggregate.mcp.tools.context.GetOrCreateContextTool;
+import com.tibbo.aggregate.mcp.tools.model.EnsureModelStructureTool;
+import com.tibbo.aggregate.mcp.tools.server.GetServerInfoTool;
+import com.tibbo.aggregate.mcp.tools.server.ExplainErrorTool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +87,8 @@ public class ToolRegistry {
         register(new ListContextsTool());
         register(new CreateContextTool());
         register(new DeleteContextTool());
+        register(new GetOrCreateContextTool());
+        register(new ListContextTreeTool());
         
         // Variable tools
         register(new GetVariableTool());
@@ -73,27 +96,38 @@ public class ToolRegistry {
         register(new SetVariableFieldTool());
         register(new ListVariablesTool());
         register(new CreateVariableTool());
+        register(new DescribeVariableTool());
+        register(new SetVariableSmartTool());
+        register(new BulkSetVariablesTool());
         
         // Function tools
         register(new CallFunctionTool());
         register(new ListFunctionsTool());
         register(new CreateFunctionTool());
+        register(new GetFunctionTool());
+        register(new TestFunctionTool());
+        register(new BuildExpressionTool());
+        register(new ValidateExpressionTool());
         
         // Device tools
         register(new CreateDeviceTool());
         register(new ListDevicesTool());
         register(new DeleteDeviceTool());
         register(new GetDeviceStatusTool());
+        register(new GetDeviceTool());
         
         // User tools
         register(new CreateUserTool());
         register(new ListUsersTool());
         register(new DeleteUserTool());
         register(new UpdateUserTool());
+        register(new GetUserTool());
+        register(new UpsertUserTool());
         
         // Event tools
         register(new FireEventTool());
         register(new CreateEventTool());
+        register(new ListEventsTool());
         
         // Action tools
         register(new ExecuteActionTool());
@@ -101,16 +135,56 @@ public class ToolRegistry {
         // Agent tools
         register(new CreateAgentTool());
         register(new GetAgentStatusTool());
+        register(new WaitAgentReadyTool());
+        register(new SendAgentEventSimpleTool());
         
         // Widget tools
         register(new CreateWidgetTool());
         register(new SetWidgetTemplateTool());
+        register(new GetWidgetTemplateTool());
+        register(new ListWidgetsTool());
         
         // Note: SetWidgetTemplateTool is registered but may need to be called via aggregate_set_widget_template
         
         // Dashboard tools
         register(new CreateDashboardTool());
         register(new AddDashboardElementTool());
+        register(new ListDashboardsTool());
+        
+        // Model tools (high-level)
+        register(new EnsureModelStructureTool());
+        
+        // Server tools
+        register(new GetServerInfoTool());
+        register(new ExplainErrorTool());
+
+        // MCP tools meta
+        register(new McpTool() {
+            @Override
+            public String getName() {
+                return "aggregate_list_tools";
+            }
+
+            @Override
+            public String getDescription() {
+                return "List all available MCP tools with their input schemas";
+            }
+
+            @Override
+            public JsonNode getInputSchema() {
+                ObjectNode schema = instance.objectNode();
+                schema.put("type", "object");
+                // No required parameters; kept for MCP protocol consistency
+                schema.set("properties", instance.objectNode());
+                return schema;
+            }
+
+            @Override
+            public JsonNode execute(JsonNode params, ConnectionManager connectionManager) {
+                // Simply delegate to registry method
+                return listTools();
+            }
+        });
     }
     
     private void register(McpTool tool) {
