@@ -49,6 +49,38 @@ import com.tibbo.aggregate.mcp.tools.variable.SetVariableSmartTool;
 import com.tibbo.aggregate.mcp.tools.variable.BulkSetVariablesTool;
 import com.tibbo.aggregate.mcp.tools.variable.GetOrCreateVariableTool;
 import com.tibbo.aggregate.mcp.tools.action.ExecuteActionTool;
+import com.tibbo.aggregate.mcp.tools.action.ListActionsTool;
+import com.tibbo.aggregate.mcp.tools.action.GetActionInfoTool;
+import com.tibbo.aggregate.mcp.tools.history.GetVariableHistoryTool;
+import com.tibbo.aggregate.mcp.tools.history.GetEventHistoryTool;
+import com.tibbo.aggregate.mcp.tools.rule.CreateRuleTool;
+import com.tibbo.aggregate.mcp.tools.rule.ListRulesTool;
+import com.tibbo.aggregate.mcp.tools.rule.EnableRuleTool;
+import com.tibbo.aggregate.mcp.tools.rule.DisableRuleTool;
+import com.tibbo.aggregate.mcp.tools.context.ExportContextTool;
+import com.tibbo.aggregate.mcp.tools.context.ImportContextTool;
+import com.tibbo.aggregate.mcp.tools.alarm.CreateAlarmTool;
+import com.tibbo.aggregate.mcp.tools.alarm.ListAlarmsTool;
+import com.tibbo.aggregate.mcp.tools.alarm.EnableAlarmTool;
+import com.tibbo.aggregate.mcp.tools.alarm.DisableAlarmTool;
+import com.tibbo.aggregate.mcp.tools.alarm.AcknowledgeAlarmTool;
+import com.tibbo.aggregate.mcp.tools.template.CreateTemplateTool;
+import com.tibbo.aggregate.mcp.tools.template.InstantiateTemplateTool;
+import com.tibbo.aggregate.mcp.tools.template.ListTemplatesTool;
+import com.tibbo.aggregate.mcp.tools.permission.SetVariablePermissionsTool;
+import com.tibbo.aggregate.mcp.tools.permission.SetEventPermissionsTool;
+import com.tibbo.aggregate.mcp.tools.permission.SetContextPermissionsTool;
+import com.tibbo.aggregate.mcp.tools.variable.UpdateVariableTool;
+import com.tibbo.aggregate.mcp.tools.variable.DeleteVariableTool;
+import com.tibbo.aggregate.mcp.tools.event.UpdateEventTool;
+import com.tibbo.aggregate.mcp.tools.event.DeleteEventTool;
+import com.tibbo.aggregate.mcp.tools.function.DeleteFunctionTool;
+import com.tibbo.aggregate.mcp.tools.driver.ListDriversTool;
+import com.tibbo.aggregate.mcp.tools.driver.GetDriverInfoTool;
+import com.tibbo.aggregate.mcp.tools.dashboard.GetDashboardTool;
+import com.tibbo.aggregate.mcp.tools.dashboard.UpdateDashboardElementTool;
+import com.tibbo.aggregate.mcp.tools.dashboard.DeleteDashboardElementTool;
+import com.tibbo.aggregate.mcp.tools.dashboard.SetDefaultDashboardTool;
 import com.tibbo.aggregate.mcp.tools.widget.CreateWidgetTool;
 import com.tibbo.aggregate.mcp.tools.widget.SetWidgetTemplateTool;
 import com.tibbo.aggregate.mcp.tools.widget.GetWidgetTemplateTool;
@@ -91,6 +123,13 @@ public class ToolRegistry {
         register(new DeleteContextTool());
         register(new GetOrCreateContextTool());
         register(new ListContextTreeTool());
+        register(new ExportContextTool());
+        register(new ImportContextTool());
+        
+        // Template tools
+        register(new CreateTemplateTool());
+        register(new InstantiateTemplateTool());
+        register(new ListTemplatesTool());
         
         // Variable tools
         register(new GetVariableTool());
@@ -102,6 +141,8 @@ public class ToolRegistry {
         register(new SetVariableSmartTool());
         register(new BulkSetVariablesTool());
         register(new GetOrCreateVariableTool());
+        register(new UpdateVariableTool());
+        register(new DeleteVariableTool());
         
         // Function tools
         register(new CallFunctionTool());
@@ -112,6 +153,7 @@ public class ToolRegistry {
         register(new BuildExpressionTool());
         register(new ValidateExpressionTool());
         register(new FixFunctionParametersTool());
+        register(new DeleteFunctionTool());
         
         // Device tools
         register(new CreateDeviceTool());
@@ -119,6 +161,10 @@ public class ToolRegistry {
         register(new DeleteDeviceTool());
         register(new GetDeviceStatusTool());
         register(new GetDeviceTool());
+        
+        // Driver tools
+        register(new ListDriversTool());
+        register(new GetDriverInfoTool());
         
         // User tools
         register(new CreateUserTool());
@@ -132,9 +178,30 @@ public class ToolRegistry {
         register(new FireEventTool());
         register(new CreateEventTool());
         register(new ListEventsTool());
+        register(new UpdateEventTool());
+        register(new DeleteEventTool());
         
         // Action tools
         register(new ExecuteActionTool());
+        register(new ListActionsTool());
+        register(new GetActionInfoTool());
+        
+        // History tools
+        register(new GetVariableHistoryTool());
+        register(new GetEventHistoryTool());
+        
+        // Rule tools
+        register(new CreateRuleTool());
+        register(new ListRulesTool());
+        register(new EnableRuleTool());
+        register(new DisableRuleTool());
+        
+        // Alarm tools
+        register(new CreateAlarmTool());
+        register(new ListAlarmsTool());
+        register(new EnableAlarmTool());
+        register(new DisableAlarmTool());
+        register(new AcknowledgeAlarmTool());
         
         // Agent tools
         register(new CreateAgentTool());
@@ -154,6 +221,15 @@ public class ToolRegistry {
         register(new CreateDashboardTool());
         register(new AddDashboardElementTool());
         register(new ListDashboardsTool());
+        register(new GetDashboardTool());
+        register(new UpdateDashboardElementTool());
+        register(new DeleteDashboardElementTool());
+        register(new SetDefaultDashboardTool());
+        
+        // Permission tools
+        register(new SetVariablePermissionsTool());
+        register(new SetEventPermissionsTool());
+        register(new SetContextPermissionsTool());
         
         // Model tools (high-level)
         register(new EnsureModelStructureTool());

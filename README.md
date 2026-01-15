@@ -69,6 +69,7 @@ MCP (Model Context Protocol) сервер для работы с AggreGate че�
 - **[docs/MCP_INPUT_FORMAT_RULES.md](docs/MCP_INPUT_FORMAT_RULES.md)** - Правила форматов входных данных
 - **[docs/MCP_DECISION_TREE.md](docs/MCP_DECISION_TREE.md)** - Дерево решений для выбора инструментов
 - **[docs/MCP_CLEAR_RULES.md](docs/MCP_CLEAR_RULES.md)** - Четкие правила работы с MCP
+- **[docs/MCP_RECOMMENDED_TOOLS.md](docs/MCP_RECOMMENDED_TOOLS.md)** - Рекомендуемые дополнительные инструменты для разработки решений
 
 ## 🏗️ Структура проекта
 
