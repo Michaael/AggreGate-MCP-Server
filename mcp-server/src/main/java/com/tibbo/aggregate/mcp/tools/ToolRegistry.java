@@ -81,6 +81,11 @@ import com.tibbo.aggregate.mcp.tools.dashboard.GetDashboardTool;
 import com.tibbo.aggregate.mcp.tools.dashboard.UpdateDashboardElementTool;
 import com.tibbo.aggregate.mcp.tools.dashboard.DeleteDashboardElementTool;
 import com.tibbo.aggregate.mcp.tools.dashboard.SetDefaultDashboardTool;
+import com.tibbo.aggregate.mcp.tools.monitoring.GetContextStatisticsTool;
+import com.tibbo.aggregate.mcp.tools.monitoring.GetServerStatisticsTool;
+import com.tibbo.aggregate.mcp.tools.monitoring.GetConnectionStatusTool;
+import com.tibbo.aggregate.mcp.tools.plugin.ListPluginsTool;
+import com.tibbo.aggregate.mcp.tools.plugin.GetPluginInfoTool;
 import com.tibbo.aggregate.mcp.tools.widget.CreateWidgetTool;
 import com.tibbo.aggregate.mcp.tools.widget.SetWidgetTemplateTool;
 import com.tibbo.aggregate.mcp.tools.widget.GetWidgetTemplateTool;
@@ -230,6 +235,15 @@ public class ToolRegistry {
         register(new SetVariablePermissionsTool());
         register(new SetEventPermissionsTool());
         register(new SetContextPermissionsTool());
+        
+        // Monitoring tools
+        register(new GetContextStatisticsTool());
+        register(new GetServerStatisticsTool());
+        register(new GetConnectionStatusTool());
+        
+        // Plugin tools
+        register(new ListPluginsTool());
+        register(new GetPluginInfoTool());
         
         // Model tools (high-level)
         register(new EnsureModelStructureTool());
