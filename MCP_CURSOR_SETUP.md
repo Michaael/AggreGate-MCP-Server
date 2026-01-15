@@ -13,7 +13,7 @@
       "command": "java",
       "args": [
         "-jar",
-        "C:\\Users\\micha\\YandexDisk\\aggregate_mcp\\mcp-server\\build\\libs\\aggregate-mcp-server-1.0.0.jar"
+        "C:\\mcp-server\\build\\libs\\aggregate-mcp-server-1.0.0.jar"
       ]
     }
   }
