@@ -89,6 +89,23 @@
 
 ### Шаг 4: Установка выражения пригодности (ОБЯЗАТЕЛЬНО!)
 
+**Способ 1: Указать при создании модели (рекомендуется)**
+```json
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "users.admin.models",
+    "name": "relativeWavesSum",
+    "description": "Относительная модель суммы Sine+Sawtooth",
+    "modelType": 0,
+    "containerType": "devices",
+    "objectType": "device",
+    "validityExpression": "{.:sine} != null && {.:sawtooth} != null"
+  }
+}
+```
+
+**Способ 2: Установить после создания модели**
 ```json
 {
   "tool": "aggregate_set_variable_field",
@@ -109,6 +126,7 @@
   - `"{.:variableName} != null"` - модель создается для объектов с определенной переменной
   - `"{.:variableName1} != null && {.:variableName2} != null"` - модель создается для объектов с обеими переменными
   - `"{.:status} == 'active'"` - модель создается только для активных объектов
+  - `"{.:}==\"users.admin.devices.test_device\""` - модель создается только для конкретного устройства (путь устройства)
 
 ---
 
@@ -234,6 +252,71 @@
     "variableName": "childInfo",
     "fieldName": "validityExpression",
     "value": "{.:status} == 'active' && {.:enabled} == true"
+  }
+}
+```
+
+### Пример 3: Относительная модель с привязкой к конкретному устройству
+
+**Задача:** Создать относительную модель, которая привязывается только к конкретному устройству `test_device`.
+
+```json
+// 1. Создание модели с validityExpression для конкретного устройства
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "users.admin.models",
+    "name": "test_relative_model",
+    "description": "Относительная модель для тестового устройства",
+    "modelType": 0,
+    "containerType": "devices",
+    "objectType": "device",
+    "validityExpression": "{.:}==\"users.admin.devices.test_device\""
+  }
+}
+
+// 2. Создание переменной
+{
+  "tool": "aggregate_create_variable",
+  "parameters": {
+    "path": "users.admin.models.test_relative_model",
+    "variableName": "sumValue",
+    "format": "<sumValue><E>",
+    "writable": true
+  }
+}
+
+// 3. Создание привязки с относительными ссылками
+{
+  "tool": "aggregate_set_variable",
+  "parameters": {
+    "path": "users.admin.models.test_relative_model",
+    "name": "bindings",
+    "value": {
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      },
+      "records": [{
+        "target": ".:sumValue",
+        "expression": "{.:}",
+        "onevent": true
+      }]
+    }
+  }
+}
+```
+
+**Проверка экземпляра модели на устройстве:**
+```json
+// Путь к экземпляру модели на устройстве: users.admin.devices.test_device.test_relative_model
+{
+  "tool": "aggregate_get_context",
+  "parameters": {
+    "path": "users.admin.devices.test_device.test_relative_model"
   }
 }
 ```

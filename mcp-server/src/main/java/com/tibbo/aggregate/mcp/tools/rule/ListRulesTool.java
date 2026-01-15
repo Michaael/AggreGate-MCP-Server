@@ -80,13 +80,11 @@ public class ListRulesTool implements McpTool {
                 return ctx;
             }, 60000L);
             
-            // Rules in AggreGate are typically stored in a special variable or accessed through actions
-            // Try to get rules through executeAction or context methods
             ArrayNode result = instance.arrayNode();
             
-            // Note: Actual implementation depends on AggreGate API
-            // Rules may be stored in a variable like "rules" or accessed through "listRules" action
-            // For now, return empty array with note that action execution may be needed
+            // Rules in AggreGate are typically accessed through actions, not variables
+            // For now, return empty array - rules may need to be accessed through "listRules" action
+            // Note: Rules can only exist in model contexts, but there's no direct variable access like V_MODEL_FUNCTIONS
             
             return result;
         } catch (ContextException e) {

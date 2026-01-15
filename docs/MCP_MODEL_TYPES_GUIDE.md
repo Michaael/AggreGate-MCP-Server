@@ -140,6 +140,8 @@
 - `type = 2` (экземплярная модель)
 - Может быть привязана к нескольким объектам
 - Создается динамически по требованию
+- Требует настройки `validityExpression` для определения условий создания экземпляров
+- После установки `validityExpression` становится доступен контейнер `objects` для экземпляров
 
 **Пример создания:**
 ```json
@@ -148,7 +150,80 @@
   "parameters": {
     "parentPath": "users.admin.models",
     "name": "instanceModel",
-    "description": "Экземплярная модель"
+    "description": "Экземплярная модель",
+    "modelType": 2,
+    "containerType": "objects",
+    "objectType": "object",
+    "validityExpression": "{.:}==''"
+  }
+}
+```
+
+**Важно:** 
+- Параметры `containerType` и `objectType` устанавливаются автоматически при создании модели (по умолчанию "objects" и "object")
+- Параметр `validityExpression` устанавливается автоматически при создании модели через `aggregate_create_context` с `modelType=2` и `validityExpression`
+- **Все необходимые поля в `childInfo` настраиваются автоматически:**
+  - `containerType` - тип контейнера (по умолчанию "objects")
+  - `containerTypeDescription` - описание типа контейнера (по умолчанию "Objects")
+  - `containerName` - имя контейнера (по умолчанию "objects")
+  - `objectType` - тип объекта (по умолчанию "object")
+  - `objectTypeDescription` - описание типа объекта (по умолчанию "Object")
+  - `suitability` - контекст, от которого начинается дерево данных экземпляров
+
+**Пример привязки для экземплярной модели:**
+```json
+{
+  "tool": "aggregate_set_variable",
+  "parameters": {
+    "path": "users.admin.models.instanceModel",
+    "name": "bindings",
+    "value": {
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      },
+      "records": [{
+        "target": ".:aggregatedData",
+        "expression": "{.:}",
+        "onevent": true
+      }]
+    }
+  }
+}
+```
+
+**Работа с экземплярами экземплярной модели:**
+
+После установки `validityExpression` становится доступен контейнер `objects` для создания экземпляров модели.
+
+**Важно понимать:**
+- `objects` - это контейнер экземпляров
+- `objects.test_instance` - это **сам экземпляр модели**, а не контейнер для экземпляра
+- Переменные модели доступны напрямую в экземпляре по пути `objects.test_instance`
+
+**Пример создания экземпляра:**
+```json
+// 1. Создание экземпляра в контейнере objects
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "objects",
+    "name": "test_instance",
+    "description": "Экземпляр модели instanceModel"
+  }
+}
+```
+
+**Пример доступа к переменной в экземпляре:**
+```json
+{
+  "tool": "aggregate_get_variable",
+  "parameters": {
+    "path": "objects.test_instance",
+    "name": "aggregatedData"
   }
 }
 ```
@@ -186,8 +261,12 @@
 
 4. **ОБЯЗАТЕЛЬНО установите выражение пригодности (validityExpression):**
    - Используйте `aggregate_set_variable_field` для установки поля `validityExpression` в переменной `childInfo`
+   - Или укажите `validityExpression` при создании модели через `aggregate_create_context`
    - Выражение определяет, для каких объектов должна создаваться модель
-   - Пример: `"{.:sine} != null && {.:sawtooth} != null"` - модель создается только для устройств, у которых есть обе переменные
+   - Примеры выражений:
+     - `"{.:sine} != null && {.:sawtooth} != null"` - модель создается только для устройств, у которых есть обе переменные
+     - `"{.:}==\"users.admin.devices.test_device\""` - модель создается только для конкретного устройства (путь устройства)
+     - `"{.:status} == 'active'"` - модель создается только для активных устройств
 
 5. **Относительные ссылки:**
    - `{.:variableName}` - ссылается на переменную текущего объекта (устройства), к которому привязан экземпляр модели
@@ -199,6 +278,41 @@
    - ✅ ПРАВИЛЬНО: `{users.admin.devices.device1:sine}`
    - ❌ НЕПРАВИЛЬНО: `{.:sine}` (не будет работать)
 
+### Для экземплярных моделей:
+
+1. **ОБЯЗАТЕЛЬНО укажите параметры при создании модели:**
+   - `modelType=2` - указывает, что это экземплярная модель
+   - `containerType="objects"` - тип контейнера (по умолчанию "objects", можно указать "devices" и т.д.)
+   - `objectType="object"` - тип объекта (по умолчанию "object", можно указать "device" и т.д.)
+   - `validityExpression` - выражение пригодности (рекомендуется)
+   - **Все поля в `childInfo` настраиваются автоматически при создании модели:**
+     - `containerType`, `containerTypeDescription`, `containerName`
+     - `objectType`, `objectTypeDescription`
+     - `suitability` (контекст, от которого начинается дерево данных экземпляров)
+     - `validityExpression` (если указано)
+
+2. **ОБЯЗАТЕЛЬНО установите выражение пригодности (validityExpression):**
+   - Укажите `validityExpression` при создании модели через `aggregate_create_context`
+   - Или используйте `aggregate_set_variable_field` для установки поля `validityExpression` в переменной `childInfo`
+   - Выражение определяет, для каких контекстов должны создаваться экземпляры модели
+   - Примеры выражений:
+     - `"{.:}==''"` - привязка к контексту сервера (пустой путь), экземпляры создаются в `objects`
+     - `"{.:}==\"users.admin.devices\""` - привязка к контексту устройств
+
+3. **ОБЯЗАТЕЛЬНО создайте переменную для хранения данных:**
+   - Используйте `aggregate_create_variable` для создания переменной в модели
+   - Переменная должна быть `writable: true` для записи данных через привязки
+
+4. **ОБЯЗАТЕЛЬНО создайте привязку (bindings):**
+   - Используйте `aggregate_set_variable` для установки переменной `bindings`
+   - В привязках можно использовать относительные ссылки `{.:variableName}` или абсолютные пути
+
+5. **Работа с экземплярами:**
+   - После установки `validityExpression` становится доступен контейнер `objects`
+   - Экземпляры создаются в `objects` как `objects.{instance_name}`
+   - **ВАЖНО:** `objects.test_instance` - это **сам экземпляр модели**, а не контейнер
+   - Переменные модели доступны напрямую в экземпляре по пути `objects.test_instance`
+
 ## Примеры использования
 
 ### Пример 1: Относительная модель для суммы волн
@@ -207,7 +321,7 @@
 
 **Решение:**
 ```json
-// 1. Создание относительной модели (параметры устанавливаются автоматически)
+// 1. Создание относительной модели с validityExpression (параметры устанавливаются автоматически)
 {
   "tool": "aggregate_create_context",
   "parameters": {
@@ -216,11 +330,12 @@
     "description": "Относительная модель суммы Sine+Sawtooth",
     "modelType": 0,
     "containerType": "devices",
-    "objectType": "device"
+    "objectType": "device",
+    "validityExpression": "{.:sine} != null && {.:sawtooth} != null"
   }
 }
 
-// 3. Создание переменной (ОБЯЗАТЕЛЬНО!)
+// 2. Создание переменной (ОБЯЗАТЕЛЬНО!)
 {
   "tool": "aggregate_create_variable",
   "parameters": {
@@ -232,7 +347,7 @@
   }
 }
 
-// 4. Создание привязки (ОБЯЗАТЕЛЬНО! ВАЖНО: относительные ссылки!)
+// 3. Создание привязки (ОБЯЗАТЕЛЬНО! ВАЖНО: относительные ссылки!)
 {
   "tool": "aggregate_set_variable",
   "parameters": {
@@ -254,9 +369,11 @@
     }
   }
 }
+```
 
-// 5. Установка выражения пригодности (ОБЯЗАТЕЛЬНО для относительных моделей!)
-// Выражение определяет, для каких объектов должна создаваться модель
+**Альтернативный способ установки validityExpression после создания модели:**
+```json
+// Если validityExpression не был указан при создании, можно установить его позже
 {
   "tool": "aggregate_set_variable_field",
   "parameters": {
@@ -264,6 +381,72 @@
     "variableName": "childInfo",
     "fieldName": "validityExpression",
     "value": "{.:sine} != null && {.:sawtooth} != null"
+  }
+}
+```
+
+### Пример 1.1: Относительная модель с привязкой к конкретному устройству
+
+**Задача:** Создать относительную модель, которая привязывается только к конкретному устройству `test_device`.
+
+**Решение:**
+```json
+// 1. Создание относительной модели с validityExpression для конкретного устройства
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "users.admin.models",
+    "name": "test_relative_model",
+    "description": "Относительная модель для тестового устройства",
+    "modelType": 0,
+    "containerType": "devices",
+    "objectType": "device",
+    "validityExpression": "{.:}==\"users.admin.devices.test_device\""
+  }
+}
+
+// 2. Создание переменной
+{
+  "tool": "aggregate_create_variable",
+  "parameters": {
+    "path": "users.admin.models.test_relative_model",
+    "variableName": "sumValue",
+    "format": "<sumValue><E>",
+    "writable": true
+  }
+}
+
+// 3. Создание привязки с относительными ссылками
+{
+  "tool": "aggregate_set_variable",
+  "parameters": {
+    "path": "users.admin.models.test_relative_model",
+    "name": "bindings",
+    "value": {
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      },
+      "records": [{
+        "target": ".:sumValue",
+        "expression": "{.:}",
+        "onevent": true
+      }]
+    }
+  }
+}
+```
+
+**Проверка экземпляра модели на устройстве:**
+```json
+// Путь к экземпляру модели на устройстве: users.admin.devices.test_device.test_relative_model
+{
+  "tool": "aggregate_get_context",
+  "parameters": {
+    "path": "users.admin.devices.test_device.test_relative_model"
   }
 }
 ```
@@ -308,6 +491,101 @@
         "onevent": true
       }]
     }
+  }
+}
+```
+
+### Пример 3: Экземплярная модель с привязкой к контексту сервера
+
+**Задача:** Создать экземплярную модель, которая привязывается к контексту сервера (пустой путь `""`) и создает экземпляры в контейнере `objects`.
+
+**Решение:**
+```json
+// 1. Создание экземплярной модели с validityExpression и настройкой полей
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "users.admin.models",
+    "name": "test_instance_model",
+    "description": "Экземплярная модель для тестирования",
+    "modelType": 2,
+    "containerType": "objects",
+    "objectType": "object",
+    "validityExpression": "{.:}==''"
+  }
+}
+
+// 2. Создание переменной (ОБЯЗАТЕЛЬНО!)
+{
+  "tool": "aggregate_create_variable",
+  "parameters": {
+    "path": "users.admin.models.test_instance_model",
+    "variableName": "aggregatedData",
+    "format": "<data><E>",
+    "writable": true
+  }
+}
+
+// 3. Создание привязки для экземплярной модели
+{
+  "tool": "aggregate_set_variable",
+  "parameters": {
+    "path": "users.admin.models.test_instance_model",
+    "name": "bindings",
+    "value": {
+      "format": {
+        "fields": [
+          {"name": "target", "type": "S"},
+          {"name": "expression", "type": "S"},
+          {"name": "onevent", "type": "B"}
+        ]
+      },
+      "records": [{
+        "target": ".:aggregatedData",
+        "expression": "{.:}",
+        "onevent": true
+      }]
+    }
+  }
+}
+```
+
+**Создание экземпляра модели:**
+```json
+// После установки validityExpression={.:}=='' становится доступен контейнер objects
+// Создаем экземпляр модели в контейнере objects
+{
+  "tool": "aggregate_create_context",
+  "parameters": {
+    "parentPath": "objects",
+    "name": "test_instance",
+    "description": "Экземпляр модели test_instance_model"
+  }
+}
+```
+
+**Важно понимать структуру:**
+- `objects` - контейнер экземпляров
+- `objects.test_instance` - **сам экземпляр модели**, а не контейнер для экземпляра
+- Переменные модели доступны напрямую в экземпляре
+
+**Доступ к переменной в экземпляре:**
+```json
+{
+  "tool": "aggregate_get_variable",
+  "parameters": {
+    "path": "objects.test_instance",
+    "name": "aggregatedData"
+  }
+}
+```
+
+**Проверка существования экземпляра:**
+```json
+{
+  "tool": "aggregate_get_context",
+  "parameters": {
+    "path": "objects.test_instance"
   }
 }
 ```
@@ -442,5 +720,20 @@
 ## Резюме
 
 - **Абсолютная модель**: один экземпляр, абсолютные пути в привязках
-- **Относительная модель**: много экземпляров (по одному на объект), относительные ссылки `{.:var}` в привязках, требует настройки `containerType` и `objectType`
-- **Экземплярная модель**: создается по требованию, может объединять несколько объектов
+- **Относительная модель**: много экземпляров (по одному на объект), относительные ссылки `{.:var}` в привязках, требует настройки `containerType`, `objectType` и `validityExpression`
+- **Экземплярная модель**: создается по требованию, может объединять несколько объектов, требует настройки `validityExpression` для определения условий создания экземпляров
+
+## Ключевые моменты для работы с моделями
+
+### Относительные модели (type=0):
+1. ✅ Укажите `modelType=0`, `containerType`, `objectType` при создании
+2. ✅ Установите `validityExpression` для определения, для каких объектов создавать модель
+3. ✅ Используйте относительные ссылки `{.:variableName}` в привязках
+4. ✅ Экземпляры создаются автоматически на устройствах, соответствующих `validityExpression`
+
+### Экземплярные модели (type=2):
+1. ✅ Укажите `modelType=2` и `validityExpression` при создании
+2. ✅ После установки `validityExpression={.:}==''` становится доступен контейнер `objects`
+3. ✅ Экземпляры создаются в `objects` как `objects.{instance_name}`
+4. ✅ **ВАЖНО:** `objects.test_instance` - это **сам экземпляр модели**, а не контейнер
+5. ✅ Переменные модели доступны напрямую в экземпляре по пути `objects.test_instance`

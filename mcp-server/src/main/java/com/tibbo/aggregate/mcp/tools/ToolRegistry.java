@@ -24,6 +24,7 @@ import com.tibbo.aggregate.mcp.tools.device.ListDevicesTool;
 import com.tibbo.aggregate.mcp.tools.device.GetDeviceTool;
 import com.tibbo.aggregate.mcp.tools.event.CreateEventTool;
 import com.tibbo.aggregate.mcp.tools.event.FireEventTool;
+import com.tibbo.aggregate.mcp.tools.event.FireContextEventTool;
 import com.tibbo.aggregate.mcp.tools.event.ListEventsTool;
 import com.tibbo.aggregate.mcp.tools.function.CallFunctionTool;
 import com.tibbo.aggregate.mcp.tools.function.CreateFunctionTool;
@@ -181,6 +182,7 @@ public class ToolRegistry {
         
         // Event tools
         register(new FireEventTool());
+        register(new FireContextEventTool());
         register(new CreateEventTool());
         register(new ListEventsTool());
         register(new UpdateEventTool());

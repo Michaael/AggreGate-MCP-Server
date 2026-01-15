@@ -75,30 +75,80 @@ public class ListFunctionsTool implements McpTool {
         try {
             String path = ContextPathParser.parsePath(params.get("path").asText());
             
-            Context context = connection.executeWithTimeout(() -> {
-                Context ctx = connection.getContextManager().get(path);
+            Context<?> context = connection.executeWithTimeout(() -> {
+                Context<?> ctx = connection.getContextManager().get(path);
                 if (ctx == null) {
                     throw new RuntimeException("Context not found: " + path);
                 }
                 return ctx;
             }, 60000);
             
-            List<FunctionDefinition> functions = connection.executeWithTimeout(() -> {
-                return context.getFunctionDefinitions();
+            // Check if this is a model context
+            boolean isModelContext = connection.executeWithTimeout(() -> {
+                try {
+                    context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_FUNCTIONS);
+                    return true;
+                } catch (ContextException e) {
+                    return false;
+                }
             }, 60000);
             
-            if (functions == null) {
-                functions = new java.util.ArrayList<>();
-            }
-            
             ArrayNode result = instance.arrayNode();
-            for (FunctionDefinition fd : functions) {
-                if (fd != null) {
-                    ObjectNode funcNode = instance.objectNode();
-                    funcNode.put("name", fd.getName() != null ? fd.getName() : "");
-                    funcNode.put("description", fd.getDescription() != null ? fd.getDescription() : "");
-                    funcNode.put("group", fd.getGroup() != null ? fd.getGroup() : "");
-                    result.add(funcNode);
+            
+            if (isModelContext) {
+                // For model context: get functions from V_MODEL_FUNCTIONS variable
+                try {
+                    com.tibbo.aggregate.common.context.CallerController caller = 
+                        context.getContextManager().getCallerController();
+                    com.tibbo.aggregate.common.datatable.DataTable modelFunctions = 
+                        context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_FUNCTIONS, caller);
+                    
+                    for (int i = 0; i < modelFunctions.getRecordCount(); i++) {
+                        com.tibbo.aggregate.common.datatable.DataRecord rec = modelFunctions.getRecord(i);
+                        ObjectNode funcNode = instance.objectNode();
+                        funcNode.put("name", rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_NAME));
+                        funcNode.put("description", rec.hasField(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_DESCRIPTION) 
+                            ? rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_DESCRIPTION) : "");
+                        funcNode.put("group", rec.hasField(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_GROUP) 
+                            ? rec.getString(com.tibbo.aggregate.common.context.AbstractContext.FIELD_FD_GROUP) : "");
+                        result.add(funcNode);
+                    }
+                } catch (Exception e) {
+                    // If V_MODEL_FUNCTIONS is not available, fall back to getFunctionDefinitions
+                    List<FunctionDefinition> functions = connection.executeWithTimeout(() -> {
+                        return context.getFunctionDefinitions();
+                    }, 60000);
+                    
+                    if (functions != null) {
+                        for (FunctionDefinition fd : functions) {
+                            if (fd != null) {
+                                ObjectNode funcNode = instance.objectNode();
+                                funcNode.put("name", fd.getName() != null ? fd.getName() : "");
+                                funcNode.put("description", fd.getDescription() != null ? fd.getDescription() : "");
+                                funcNode.put("group", fd.getGroup() != null ? fd.getGroup() : "");
+                                result.add(funcNode);
+                            }
+                        }
+                    }
+                }
+            } else {
+                // For regular context: use getFunctionDefinitions
+                List<FunctionDefinition> functions = connection.executeWithTimeout(() -> {
+                    return context.getFunctionDefinitions();
+                }, 60000);
+                
+                if (functions == null) {
+                    functions = new java.util.ArrayList<>();
+                }
+                
+                for (FunctionDefinition fd : functions) {
+                    if (fd != null) {
+                        ObjectNode funcNode = instance.objectNode();
+                        funcNode.put("name", fd.getName() != null ? fd.getName() : "");
+                        funcNode.put("description", fd.getDescription() != null ? fd.getDescription() : "");
+                        funcNode.put("group", fd.getGroup() != null ? fd.getGroup() : "");
+                        result.add(funcNode);
+                    }
                 }
             }
             

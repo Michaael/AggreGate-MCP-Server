@@ -139,31 +139,52 @@ else:
 
 ## 🚨 Автоматическое исправление
 
-Если обнаружена проблема с форматом:
+**✨ УЛУЧШЕНИЕ:** `aggregate_create_function` теперь **автоматически исправляет** форматы!
+
+### Как это работает:
+
+1. **Инструмент парсит формат** стандартным способом
+2. **Подсчитывает ожидаемое количество полей** в строке формата (по паттерну `<name><Type>`)
+3. **Сравнивает** с фактически распарсенными полями
+4. **Если поля потерялись** (например, из 3 полей распарсилось только 1):
+   - Автоматически перепарсивает формат с правильными настройками (`ClassicEncodingSettings`)
+   - Восстанавливает все поля
+   - Функция создается корректно
+
+### Рекомендуемый подход (используйте encoded форматы):
 
 ```python
-def fix_input_format(path, functionName, inputFields, outputFields, expression):
-    # Определить правильный формат
-    if len(inputFields) > 1:
-        inputFormat = f"<<{''.join([f'<{f['name']}><{f['type']}>' for f in inputFields])}>>"
-        outputFormat = f"<<{''.join([f'<{f['name']}><{f['type']}>' for f in outputFields])}>>"
-    else:
-        inputFormat = f"<{inputFields[0]['name']}><{inputFields[0]['type']}>"
-        outputFormat = f"<{outputFields[0]['name']}><{outputFields[0]['type']}>"
-    
-    # Пересоздать функцию
-    aggregate_create_function(
-        path=path,
-        functionName=functionName,
-        functionType=1,
-        inputFormat=inputFormat,
-        outputFormat=outputFormat,
-        expression=expression
-    )
-    
-    # Проверить
-    check = aggregate_get_function(path, functionName)
-    assert len(check.inputFields) == len(inputFields), "Формат все еще неправильный!"
+# 1. Используйте aggregate_build_expression
+result = aggregate_build_expression(
+    inputFields=[{"name": "arg1", "type": "E"}, {"name": "arg2", "type": "E"}],
+    outputFields=[{"name": "result", "type": "E"}],
+    formula="({arg1} + {arg2}) / 2"
+)
+
+# 2. Для множественных полей используйте encoded форматы
+if len(inputFields) > 1:
+    inputFormat = result["encodedInputFormat"]  # <<arg1><E><arg2><E>>
+    outputFormat = result["encodedOutputFormat"]  # <result><E>
+else:
+    inputFormat = result["inputFormat"]  # <value><E>
+    outputFormat = result["outputFormat"]  # <result><E>
+
+# 3. Создайте функцию - автоматическое исправление сработает как fallback
+aggregate_create_function(
+    path=path,
+    functionName=functionName,
+    functionType=1,
+    inputFormat=inputFormat,
+    outputFormat=outputFormat,
+    expression=result["expression"]
+)
+```
+
+### Старый подход (все еще работает, но не рекомендуется):
+
+```python
+# Старый код больше не нужен - aggregate_create_function исправит формат автоматически
+# Но лучше использовать encoded форматы из aggregate_build_expression
 ```
 
 ## ✅ Чек-лист
@@ -179,6 +200,26 @@ def fix_input_format(path, functionName, inputFields, outputFields, expression):
 
 ## 📝 Важные замечания
 
-1. **aggregate_build_expression** возвращает формат БЕЗ `<<>>`, но для множественных полей нужно добавлять `<<>>` вручную
-2. **aggregate_test_function** может не работать для функций с множественными полями - используйте `aggregate_call_function` с DataTable форматом
-3. **aggregate_get_function** может показывать неправильный inputFormat - всегда проверяйте количество полей
+1. **aggregate_build_expression** теперь возвращает **оба варианта**:
+   - `inputFormat` / `outputFormat` - базовые (без `<<>>`)
+   - `encodedInputFormat` / `encodedOutputFormat` - безопасные (с `<<>>` для множественных полей) ✅ **ИСПОЛЬЗУЙТЕ ЭТИ**
+2. **aggregate_validate_expression** теперь нормализует форматы и возвращает `normalizedInputFormat` / `normalizedOutputFormat`
+3. **aggregate_create_function** автоматически исправляет форматы, если поля потерялись при парсинге
+4. **aggregate_test_function** может не работать для функций с множественными полями - используйте `aggregate_call_function` с DataTable форматом
+5. **aggregate_get_function** - всегда проверяйте количество полей после создания
+
+## ✨ Новые возможности
+
+### Автоматическая нормализация форматов
+
+Все инструменты теперь **терпимы** к форматам:
+- Можно передать формат с `<<>>` или без
+- Инструменты автоматически нормализуют и исправляют
+- Результаты всегда содержат правильные форматы
+
+### Рекомендуемый workflow:
+
+1. `aggregate_build_expression` → получаете `encodedInputFormat` / `encodedOutputFormat`
+2. (Опционально) `aggregate_validate_expression` → получаете `normalizedInputFormat` / `normalizedOutputFormat`
+3. `aggregate_create_function` → автоматически исправляет, если нужно
+4. `aggregate_get_function` → проверяете, что все поля на месте

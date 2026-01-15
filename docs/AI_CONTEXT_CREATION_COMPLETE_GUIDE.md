@@ -288,11 +288,15 @@
 **Результат:**
 ```json
 {
-  "inputFormat": "<value1><E><value2><E>",  // БЕЗ <<>>!
-  "outputFormat": "<result><E>",  // БЕЗ <<>>!
+  "inputFormat": "<value1><E><value2><E>",  // Базовый формат (без <<>>)
+  "outputFormat": "<result><E>",  // Базовый формат (без <<>>)
+  "encodedInputFormat": "<<value1><E><value2><E>>",  // ✅ Безопасный формат для множественных полей
+  "encodedOutputFormat": "<result><E>",  // Для одного поля = базовый формат
   "expression": "table(\"<<result><E>>\", ({value1} + {value2}) / 2)"  // С <<>> внутри table()!
 }
 ```
+
+**✨ Улучшение:** Используйте `encodedInputFormat` / `encodedOutputFormat` для функций с несколькими полями!
 
 #### Шаг 2: Валидация
 
@@ -325,7 +329,7 @@
 }
 ```
 
-**Для функций с несколькими полями (ИСПОЛЬЗУЙТЕ <<>> в inputFormat/outputFormat):**
+**Для функций с несколькими полями (ИСПОЛЬЗУЙТЕ encoded форматы):**
 ```json
 {
   "tool": "aggregate_create_function",
@@ -333,20 +337,28 @@
     "path": "users.admin.models.myModel",
     "functionName": "calculate_average",
     "functionType": 1,
-    "inputFormat": "<<value1><E><value2><E>>",  // С <<>> для множественных полей!
-    "outputFormat": "<<result><E>>",  // С <<>> для множественных полей!
+    "inputFormat": "<<value1><E><value2><E>>",  // ✅ Используйте encodedInputFormat из aggregate_build_expression
+    "outputFormat": "<result><E>",  // Для одного выходного поля - обычный формат
     "expression": "table(\"<<result><E>>\", ({value1} + {value2}) / 2)",  // С <<>> внутри table()
     "description": "Вычисление среднего значения"
   }
 }
 ```
 
+**✨ Улучшение:** `aggregate_create_function` теперь автоматически исправляет форматы, если поля потерялись при парсинге. Но лучше использовать `encodedInputFormat` / `encodedOutputFormat` из `aggregate_build_expression`.
+
 **КРИТИЧЕСКИЕ ПРАВИЛА:**
 1. **inputFormat/outputFormat БЕЗ <<>>** для одного поля: `<value><E>`
-2. **inputFormat/outputFormat С <<>>** для нескольких полей: `<<value1><E><value2><E>>`
+2. **inputFormat/outputFormat С <<>>** для нескольких полей: `<<value1><E><value2><E>>` (используйте `encodedInputFormat` / `encodedOutputFormat` из `aggregate_build_expression`)
 3. **expression ВСЕГДА С <<>>** внутри table(): `table(\"<<result><E>>\", ...)`
-4. **ВСЕГДА используйте `aggregate_build_expression`** перед созданием
-5. **ВСЕГДА используйте `aggregate_validate_expression`** перед созданием
+4. **ВСЕГДА используйте `aggregate_build_expression`** перед созданием - он вернет правильные форматы
+5. **(Опционально) Используйте `aggregate_validate_expression`** для проверки - он нормализует форматы
+6. **✨ НОВОЕ:** `aggregate_create_function` автоматически исправляет форматы, если поля потерялись
+
+**Рекомендуемый workflow:**
+1. `aggregate_build_expression` → используйте `encodedInputFormat` / `encodedOutputFormat` для множественных полей
+2. (Опционально) `aggregate_validate_expression` → используйте `normalizedInputFormat` / `normalizedOutputFormat`
+3. `aggregate_create_function` → автоматическое исправление сработает как fallback
 
 ### 3.3. Пример функции из реального сервера
 

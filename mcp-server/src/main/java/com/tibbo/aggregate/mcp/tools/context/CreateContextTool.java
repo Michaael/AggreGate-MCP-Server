@@ -83,6 +83,15 @@ public class CreateContextTool implements McpTool {
                    "This determines the type of objects that will have model instances.");
         properties.set("objectType", objectType);
         
+        ObjectNode validityExpression = instance.objectNode();
+        validityExpression.put("type", "string");
+        validityExpression.put("description", "Validity expression (suitability) for relative and instance models (optional but recommended). " +
+                          "Determines for which objects/contexts the model should be created. " +
+                          "For relative models: uses relative references {.:variableName} to refer to object variables. " +
+                          "Example: '{.:sine} != null && {.:sawtooth} != null' - model is created only for devices that have both variables. " +
+                          "For instance models: determines the context from which the instance data tree will start.");
+        properties.set("validityExpression", validityExpression);
+        
         schema.set("required", instance.arrayNode().add("parentPath").add("name"));
         schema.set("properties", properties);
         return schema;
@@ -133,15 +142,17 @@ public class CreateContextTool implements McpTool {
             boolean isModelsContext = parentPath.contains(".models") || parentPath.endsWith("models");
             
             // Model type parameters - only relevant for models contexts
-            int modelType;
-            final String containerType;
-            final String objectType;
+            int modelType = 0;
+            String containerType = null;
+            String objectType = null;
+            String validityExpression = null;
             
             if (isModelsContext) {
                 // For models contexts, modelType, containerType, objectType are relevant
                 modelType = params.has("modelType") ? params.get("modelType").asInt() : 0; // 0=relative (default)
                 containerType = params.has("containerType") ? params.get("containerType").asText() : null;
                 objectType = params.has("objectType") ? params.get("objectType").asText() : null;
+                validityExpression = params.has("validityExpression") ? params.get("validityExpression").asText() : null;
                 
                 // Validate relative model parameters - only for models contexts
                 if (modelType == 0) { // Relative model
@@ -290,8 +301,9 @@ public class CreateContextTool implements McpTool {
                     
                     // Step 1: Set model type FIRST using setVariableField (CRITICAL!)
                     // This must be done before any other settings
+                    final int finalModelType = modelType;
                     connection.executeWithTimeout(() -> {
-                        newContext.setVariableField("childInfo", "type", modelType, caller);
+                        newContext.setVariableField("childInfo", "type", finalModelType, caller);
                         return null;
                     }, 60000);
                     
@@ -302,9 +314,13 @@ public class CreateContextTool implements McpTool {
                     // Only after type is set and applied
                     // Only configure for models contexts
                     if (isModelsContext && modelType == 0 && containerType != null && objectType != null) {
+                        // Create final copies for lambda expressions
+                        final String finalContainerType = containerType;
+                        final String finalObjectType = objectType;
+                        
                         // Set containerType
                         connection.executeWithTimeout(() -> {
-                            newContext.setVariableField("childInfo", "containerType", containerType, caller);
+                            newContext.setVariableField("childInfo", "containerType", finalContainerType, caller);
                             return null;
                         }, 60000);
                         
@@ -313,12 +329,142 @@ public class CreateContextTool implements McpTool {
                         
                         // Set objectType
                         connection.executeWithTimeout(() -> {
-                            newContext.setVariableField("childInfo", "objectType", objectType, caller);
+                            newContext.setVariableField("childInfo", "objectType", finalObjectType, caller);
                             return null;
                         }, 60000);
                         
-                        // Step 4: Wait for all settings to be applied
+                        // Step 4: Set suitability for relative models
+                        // For relative models, suitability should match the contexts to which the model is attached
+                        // For example, if containerType is "devices", suitability should point to devices context
+                        try {
+                            final String suitabilityPath;
+                            if ("devices".equals(containerType)) {
+                                // For device models, suitability points to devices context
+                                String username = parentPath.split("\\.")[1]; // Extract username from path like "users.admin.models"
+                                suitabilityPath = "users." + username + ".devices";
+                            } else if ("objects".equals(containerType)) {
+                                // For object models, suitability points to objects context
+                                String username = parentPath.split("\\.")[1];
+                                suitabilityPath = "users." + username + ".objects";
+                            } else {
+                                suitabilityPath = null;
+                            }
+                            
+                            if (suitabilityPath != null) {
+                                final String finalSuitabilityPath = suitabilityPath;
+                                connection.executeWithTimeout(() -> {
+                                    newContext.setVariableField("childInfo", "suitability", finalSuitabilityPath, caller);
+                                    return null;
+                                }, 60000);
+                                System.err.println("[MCP] Set suitability for relative model: " + finalSuitabilityPath);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("[MCP] Warning: Failed to set suitability for relative model: " + e.getMessage());
+                        }
+                        
+                        // Step 5: Set validityExpression (suitability) for relative models (if provided)
+                        // validityExpression determines for which objects the model should be created
+                        // This is the suitability expression that matches the contexts to which the model is attached
+                        if (validityExpression != null && !validityExpression.isEmpty()) {
+                            try {
+                                final String finalValidityExpression = validityExpression;
+                                connection.executeWithTimeout(() -> {
+                                    newContext.setVariableField("childInfo", "validityExpression", finalValidityExpression, caller);
+                                    return null;
+                                }, 60000);
+                                System.err.println("[MCP] Set validityExpression (suitability) for relative model: " + finalValidityExpression);
+                            } catch (Exception e) {
+                                System.err.println("[MCP] Warning: Failed to set validityExpression for relative model: " + e.getMessage());
+                            }
+                        }
+                        
+                        // Step 6: Wait for all settings to be applied
                         Thread.sleep(300);
+                    }
+                    
+                    // Step 4: For instance models (modelType=2), configure all required fields
+                    // For instance models, we need to set: containerType, containerTypeDescription, containerName,
+                    // objectType, objectTypeDescription, suitability, validityExpression
+                    if (isModelsContext && modelType == 2) {
+                        try {
+                            // Default values for instance models
+                            final String defaultContainerType = containerType != null ? containerType : "objects";
+                            final String defaultContainerTypeDescription = 
+                                "objects".equals(defaultContainerType) ? "Objects" : 
+                                "devices".equals(defaultContainerType) ? "Devices" : "Objects";
+                            final String defaultContainerName = "objects";
+                            final String defaultObjectType = objectType != null ? objectType : "object";
+                            final String defaultObjectTypeDescription = 
+                                "object".equals(defaultObjectType) ? "Object" : 
+                                "device".equals(defaultObjectType) ? "Device" : "Object";
+                            
+                            // Set containerType
+                            final String finalContainerType = defaultContainerType;
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "containerType", finalContainerType, caller);
+                                return null;
+                            }, 60000);
+                            Thread.sleep(200);
+                            
+                            // Set containerTypeDescription
+                            final String finalContainerTypeDescription = defaultContainerTypeDescription;
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "containerTypeDescription", finalContainerTypeDescription, caller);
+                                return null;
+                            }, 60000);
+                            Thread.sleep(200);
+                            
+                            // Set containerName
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "containerName", defaultContainerName, caller);
+                                return null;
+                            }, 60000);
+                            Thread.sleep(200);
+                            
+                            // Set objectType
+                            final String finalObjectType = defaultObjectType;
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "objectType", finalObjectType, caller);
+                                return null;
+                            }, 60000);
+                            Thread.sleep(200);
+                            
+                            // Set objectTypeDescription
+                            final String finalObjectTypeDescription = defaultObjectTypeDescription;
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "objectTypeDescription", finalObjectTypeDescription, caller);
+                                return null;
+                            }, 60000);
+                            Thread.sleep(200);
+                            
+                            // Set suitability for instance models
+                            // For instance models, suitability should point to the context from which the instance data tree will start
+                            final String suitabilityPath = parentPath; // Default to parent context
+                            connection.executeWithTimeout(() -> {
+                                newContext.setVariableField("childInfo", "suitability", suitabilityPath, caller);
+                                return null;
+                            }, 60000);
+                            System.err.println("[MCP] Set suitability for instance model: " + suitabilityPath);
+                            Thread.sleep(200);
+                            
+                            // Set validityExpression for instance models
+                            if (validityExpression != null && !validityExpression.isEmpty()) {
+                                final String finalValidityExpression = validityExpression;
+                                connection.executeWithTimeout(() -> {
+                                    newContext.setVariableField("childInfo", "validityExpression", finalValidityExpression, caller);
+                                    return null;
+                                }, 60000);
+                                System.err.println("[MCP] Set validityExpression for instance model: " + finalValidityExpression);
+                            }
+                            Thread.sleep(200);
+                            
+                            System.err.println("[MCP] Instance model configured with: containerType=" + finalContainerType + 
+                                              ", containerName=" + defaultContainerName + 
+                                              ", objectType=" + finalObjectType);
+                        } catch (Exception e) {
+                            System.err.println("[MCP] Warning: Failed to configure instance model: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 } catch (Exception e) {
                     // Log but don't fail - model type configuration is optional

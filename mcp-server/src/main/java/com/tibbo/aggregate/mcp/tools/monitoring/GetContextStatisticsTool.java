@@ -3,6 +3,8 @@ package com.tibbo.aggregate.mcp.tools.monitoring;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tibbo.aggregate.common.context.Context;
+import com.tibbo.aggregate.common.context.CallerController;
+import com.tibbo.aggregate.common.datatable.DataTable;
 import com.tibbo.aggregate.mcp.connection.ConnectionManager;
 import com.tibbo.aggregate.mcp.connection.ServerConnection;
 import com.tibbo.aggregate.mcp.protocol.McpException;
@@ -82,37 +84,74 @@ public class GetContextStatisticsTool implements McpTool {
             ObjectNode result = instance.objectNode();
             result.put("path", path);
             
+            // Detect if this is a model context by checking for V_MODEL_VARIABLES
+            boolean isModelContext = false;
+            try {
+                isModelContext = connection.executeWithTimeout(() -> {
+                    try {
+                        context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES);
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }, 10000L);
+            } catch (Exception ignored) {
+                isModelContext = false;
+            }
+            
             // Count variables
             try {
-                java.util.List<com.tibbo.aggregate.common.context.VariableDefinition> variables = 
-                    context.getVariableDefinitions();
-                result.put("variableCount", variables != null ? variables.size() : 0);
+                if (isModelContext) {
+                    CallerController caller = context.getContextManager().getCallerController();
+                    DataTable modelVariables =
+                        context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_VARIABLES, caller);
+                    result.put("variableCount", modelVariables != null ? modelVariables.getRecordCount() : 0);
+                } else {
+                    java.util.List<com.tibbo.aggregate.common.context.VariableDefinition> variables =
+                        context.getVariableDefinitions();
+                    result.put("variableCount", variables != null ? variables.size() : 0);
+                }
             } catch (Exception e) {
                 result.put("variableCount", 0);
             }
             
             // Count events
             try {
-                java.util.List<com.tibbo.aggregate.common.context.EventDefinition> events = 
-                    context.getEventDefinitions();
-                result.put("eventCount", events != null ? events.size() : 0);
+                if (isModelContext) {
+                    CallerController caller = context.getContextManager().getCallerController();
+                    DataTable modelEvents =
+                        context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_EVENTS, caller);
+                    result.put("eventCount", modelEvents != null ? modelEvents.getRecordCount() : 0);
+                } else {
+                    java.util.List<com.tibbo.aggregate.common.context.EventDefinition> events =
+                        context.getEventDefinitions();
+                    result.put("eventCount", events != null ? events.size() : 0);
+                }
             } catch (Exception e) {
                 result.put("eventCount", 0);
             }
             
             // Count functions
             try {
-                java.util.List<com.tibbo.aggregate.common.context.FunctionDefinition> functions = 
-                    context.getFunctionDefinitions();
-                result.put("functionCount", functions != null ? functions.size() : 0);
+                if (isModelContext) {
+                    CallerController caller = context.getContextManager().getCallerController();
+                    DataTable modelFunctions =
+                        context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_FUNCTIONS, caller);
+                    result.put("functionCount", modelFunctions != null ? modelFunctions.getRecordCount() : 0);
+                } else {
+                    java.util.List<com.tibbo.aggregate.common.context.FunctionDefinition> functions =
+                        context.getFunctionDefinitions();
+                    result.put("functionCount", functions != null ? functions.size() : 0);
+                }
             } catch (Exception e) {
                 result.put("functionCount", 0);
             }
             
-            // Count rules (may need to use action)
+            // Count rules
             try {
-                // Rules may not have direct getRuleDefinitions method
-                // Try to get through action or variable
+                // Rules in AggreGate are typically accessed through actions, not variables
+                // There's no direct variable like V_MODEL_RULES (unlike V_MODEL_FUNCTIONS and V_MODEL_EVENTS)
+                // Rules can only exist in model contexts, but we can't count them directly
                 result.put("ruleCount", 0);
             } catch (Exception e) {
                 result.put("ruleCount", 0);

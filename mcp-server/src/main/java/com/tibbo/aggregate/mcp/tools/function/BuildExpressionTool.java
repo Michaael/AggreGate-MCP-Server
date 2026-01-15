@@ -23,9 +23,9 @@ public class BuildExpressionTool implements McpTool {
     @Override
     public String getDescription() {
         return "Build correct Expression function format strings and expression syntax. " +
-               "This tool ensures proper formatting according to AggreGate rules: " +
-               "inputFormat and outputFormat should NOT have <<>> brackets, " +
-               "only the expression string itself uses <<>> inside table() function. " +
+               "This tool ensures proper formatting according to AggreGate rules. " +
+               "It returns plain formats (without <<>>) and, for multiple fields, encoded variants wrapped in <<>>. " +
+               "Only the expression string itself uses <<>> inside table() function. " +
                "Use this tool BEFORE creating Expression functions to avoid syntax errors.";
     }
     
@@ -86,7 +86,7 @@ public class BuildExpressionTool implements McpTool {
         }
         
         try {
-            // Build inputFormat (WITHOUT <<>>)
+            // Build inputFormat (base form, WITHOUT outer <<>>)
             // Note: Descriptions are stored separately, not in format string
             StringBuilder inputFormatBuilder = new StringBuilder();
             ArrayNode inputFields = (ArrayNode) params.get("inputFields");
@@ -99,7 +99,7 @@ public class BuildExpressionTool implements McpTool {
             }
             String inputFormat = inputFormatBuilder.toString();
             
-            // Build outputFormat (WITHOUT <<>>)
+            // Build outputFormat (base form, WITHOUT outer <<>>)
             // Note: Descriptions are stored separately, not in format string
             StringBuilder outputFormatBuilder = new StringBuilder();
             ArrayNode outputFields = (ArrayNode) params.get("outputFields");
@@ -111,6 +111,12 @@ public class BuildExpressionTool implements McpTool {
                 outputFormatBuilder.append("<").append(type).append(">");
             }
             String outputFormat = outputFormatBuilder.toString();
+            
+            // Encoded variants with outer <<>> for multi-field formats (recommended for MCP create_function)
+            boolean multipleInputFields = inputFields.size() > 1;
+            boolean multipleOutputFields = outputFields.size() > 1;
+            String encodedInputFormat = multipleInputFields ? "<<" + inputFormat + ">>" : inputFormat;
+            String encodedOutputFormat = multipleOutputFields ? "<<" + outputFormat + ">>" : outputFormat;
             
             // Build expression string
             String formula = params.get("formula").asText();
@@ -156,21 +162,30 @@ public class BuildExpressionTool implements McpTool {
             result.put("inputFormat", inputFormat);
             result.put("outputFormat", outputFormat);
             result.put("expression", expression);
+            // Extra fields to help MCP / AI choose safest variant
+            result.put("encodedInputFormat", encodedInputFormat);
+            result.put("encodedOutputFormat", encodedOutputFormat);
             
             // Add usage instructions
             ObjectNode usage = instance.objectNode();
             usage.put("step1", "Use these values in aggregate_create_function:");
             usage.put("step2", "Set functionType to 1 (Expression)");
-            usage.put("step3", "Use inputFormat and outputFormat AS-IS (they are correct, without <<>>)");
+            usage.put("step3", "For single-field functions, use inputFormat/outputFormat as-is. For multiple fields, prefer encodedInputFormat/encodedOutputFormat (with <<>>) when calling aggregate_create_function via MCP – this avoids field loss.");
             usage.put("step4", "Use expression AS-IS (it already has <<>> inside table())");
-            usage.put("warning", "DO NOT add <<>> to inputFormat or outputFormat - they are already correct!");
+            usage.put("warning", "You can safely pass either plain or <<>>-wrapped formats; the server will normalize and auto-fix typical mistakes.");
             result.set("usage", usage);
             
             // Add examples
             ObjectNode examples = instance.objectNode();
-            examples.put("correct", "inputFormat: '<value1><E><value2><E>', outputFormat: '<result><E>', " +
+            examples.put("singleField",
+                "inputFormat: '<value><E>', outputFormat: '<result><E>', " +
+                "expression: 'table(\"<<result><E>>\", {value} * 2)'");
+            examples.put("multiField_plain",
+                "inputFormat: '<value1><E><value2><E>', outputFormat: '<result><E>', " +
                 "expression: 'table(\"<<result><E>>\", ({value1} + {value2}) / 2)'");
-            examples.put("incorrect", "inputFormat: '<<value1><E><value2><E>>' (WRONG - no <<>> in formats!)");
+            examples.put("multiField_encoded",
+                "encodedInputFormat: '<<value1><E><value2><E>>', encodedOutputFormat: '<<result><E>>' – " +
+                "recommended when creating functions via MCP to avoid losing fields.");
             result.set("examples", examples);
             
             return result;

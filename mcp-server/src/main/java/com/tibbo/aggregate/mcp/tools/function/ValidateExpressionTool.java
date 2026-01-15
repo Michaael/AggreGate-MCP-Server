@@ -27,7 +27,7 @@ public class ValidateExpressionTool implements McpTool {
     @Override
     public String getDescription() {
         return "Validate Expression function syntax according to AggreGate rules. " +
-               "Checks: inputFormat/outputFormat should NOT have <<>>, " +
+               "Checks: inputFormat/outputFormat may optionally have <<>> which will be normalized, " +
                "expression must have <<>> inside table(), field names match, etc. " +
                "Use this BEFORE creating functions to catch errors early.";
     }
@@ -40,12 +40,12 @@ public class ValidateExpressionTool implements McpTool {
         
         ObjectNode inputFormat = instance.objectNode();
         inputFormat.put("type", "string");
-        inputFormat.put("description", "Input format string (should NOT have <<>> brackets)");
+        inputFormat.put("description", "Input format string. May be in plain form '<a><E><b><E>' or encoded with <<>> '<<a><E><b><E>>'. Tool will normalize it.");
         properties.set("inputFormat", inputFormat);
         
         ObjectNode outputFormat = instance.objectNode();
         outputFormat.put("type", "string");
-        outputFormat.put("description", "Output format string (should NOT have <<>> brackets)");
+        outputFormat.put("description", "Output format string. May be in plain form '<result><E>' or encoded with <<>> '<<result><E>>'. Tool will normalize it.");
         properties.set("outputFormat", outputFormat);
         
         ObjectNode expression = instance.objectNode();
@@ -77,22 +77,18 @@ public class ValidateExpressionTool implements McpTool {
         ArrayNode warnings = instance.arrayNode();
         ArrayNode suggestions = instance.arrayNode();
         
-        // Rule 1: inputFormat should NOT have <<>>
-        if (inputFormat.contains("<<") || inputFormat.contains(">>")) {
-            result.put("valid", false);
-            errors.add("inputFormat contains <<>> brackets. " +
-                      "CORRECT: '<value1><E><value2><E>'. " +
-                      "INCORRECT: '<<value1><E><value2><E>>'. " +
-                      "Remove <<>> from inputFormat!");
-        }
+        // Normalize formats: strip optional outer <<>> but don't treat them as hard errors
+        String normalizedInputFormat = normalizeFormat(inputFormat);
+        String normalizedOutputFormat = normalizeFormat(outputFormat);
         
-        // Rule 2: outputFormat should NOT have <<>>
-        if (outputFormat.contains("<<") || outputFormat.contains(">>")) {
-            result.put("valid", false);
-            errors.add("outputFormat contains <<>> brackets. " +
-                      "CORRECT: '<result><E>'. " +
-                      "INCORRECT: '<<result><E>>'. " +
-                      "Remove <<>> from outputFormat!");
+        // Warn (but don't fail) if caller passed encoded formats – we will transparently normalize them
+        if (!inputFormat.equals(normalizedInputFormat)) {
+            warnings.add("inputFormat contains outer <<>> brackets. It has been normalized to '" +
+                    normalizedInputFormat + "'. You can safely pass either plain or <<>>-wrapped formats.");
+        }
+        if (!outputFormat.equals(normalizedOutputFormat)) {
+            warnings.add("outputFormat contains outer <<>> brackets. It has been normalized to '" +
+                    normalizedOutputFormat + "'. You can safely pass either plain or <<>>-wrapped formats.");
         }
         
         // Rule 3: expression MUST have <<>> inside table()
@@ -110,18 +106,19 @@ public class ValidateExpressionTool implements McpTool {
                           "The <<>> must be INSIDE the table() function!");
             } else {
                 // Extract the format inside <<>> from expression
-                Pattern pattern = Pattern.compile("table\\(\"(&lt;&lt;.*?&gt;&gt;)\"|table\\(\"(<<.*?>>)\"");
+                // Support both HTML-escaped and raw << >> notations inside table()
+                Pattern pattern = Pattern.compile("table\\(\"(&lt;&lt;.*?&gt;&gt;|<<.*?>>)\"");
                 Matcher matcher = pattern.matcher(expression);
                 if (matcher.find()) {
-                    String formatInExpression = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+                    String formatInExpression = matcher.group(1);
                     // Remove << and >>
                     String formatInExpressionClean = formatInExpression.replace("<<", "").replace(">>", "");
                     
                     // Compare with outputFormat
-                    if (!formatInExpressionClean.equals(outputFormat)) {
+                    if (!formatInExpressionClean.equals(normalizedOutputFormat)) {
                         warnings.add("Format inside expression <<>> does not match outputFormat. " +
                                    "Expression has: " + formatInExpressionClean + ", " +
-                                   "outputFormat has: " + outputFormat + ". " +
+                                   "outputFormat has: " + normalizedOutputFormat + ". " +
                                    "They should match!");
                     }
                 }
@@ -129,7 +126,7 @@ public class ValidateExpressionTool implements McpTool {
         }
         
         // Rule 4: Extract field names from inputFormat and check they're used in expression
-        Set<String> inputFieldNames = extractFieldNames(inputFormat);
+        Set<String> inputFieldNames = extractFieldNames(normalizedInputFormat);
         Set<String> expressionFieldNames = extractFieldNamesFromExpression(expression);
         
         for (String fieldName : inputFieldNames) {
@@ -152,17 +149,17 @@ public class ValidateExpressionTool implements McpTool {
         // (outputFieldNames extraction is done implicitly in the expression format check above)
         
         // Add suggestions based on common mistakes
-        if (inputFormat.trim().isEmpty()) {
+        if (normalizedInputFormat.trim().isEmpty()) {
             suggestions.add("inputFormat is empty. Even if function has no inputs, consider using empty format: ''");
         }
         
-        if (outputFormat.trim().isEmpty()) {
+        if (normalizedOutputFormat.trim().isEmpty()) {
             suggestions.add("outputFormat is empty. Expression functions should have output. " +
                           "Example: '<result><E>'");
         }
         
         // Check for common type mistakes
-        if (inputFormat.contains("<S>") && expression.contains("+") && !expression.contains("concat")) {
+        if (normalizedInputFormat.contains("<S>") && expression.contains("+") && !expression.contains("concat")) {
             suggestions.add("You're using + operator with String fields. " +
                           "For strings, use concat() function: concat({field1}, {field2})");
         }
@@ -180,7 +177,35 @@ public class ValidateExpressionTool implements McpTool {
             result.set("correctExample", correctExample);
         }
         
+        // Expose normalized formats so callers can reuse them when creating functions
+        result.put("normalizedInputFormat", normalizedInputFormat);
+        result.put("normalizedOutputFormat", normalizedOutputFormat);
+        
         return result;
+    }
+    
+    /**
+     * Normalize AggreGate format string: strip single outer << >> wrapper if present.
+     * Also handles triple brackets (<<<...>>>) which can occur due to JSON serialization.
+     * Examples:
+     *  - "<<a><E><b><E>>"  -> "<a><E><b><E>"
+     *  - "<<<a><E><b><E>>>" -> "<a><E><b><E>"
+     *  - "<a><E><b><E>"    -> "<a><E><b><E>"
+     */
+    private String normalizeFormat(String format) {
+        if (format == null) {
+            return "";
+        }
+        String trimmed = format.trim();
+        // First, fix triple brackets (JSON serialization artifact)
+        if (trimmed.contains("<<<")) {
+            trimmed = trimmed.replace("<<<", "<<").replace(">>>", ">>");
+        }
+        // Then normalize double brackets
+        if (trimmed.startsWith("<<") && trimmed.endsWith(">>") && trimmed.length() > 4) {
+            return trimmed.substring(2, trimmed.length() - 2);
+        }
+        return trimmed;
     }
     
     private Set<String> extractFieldNames(String format) {

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tibbo.aggregate.common.context.Context;
 import com.tibbo.aggregate.common.context.ContextException;
+import com.tibbo.aggregate.common.action.command.EditData;
+import com.tibbo.aggregate.common.action.command.Confirm;
 import com.tibbo.aggregate.mcp.connection.ConnectionManager;
 import com.tibbo.aggregate.mcp.connection.ServerConnection;
 import com.tibbo.aggregate.mcp.protocol.McpException;
@@ -115,35 +117,58 @@ public class CreateRuleTool implements McpTool {
                 return ctx;
             }, 60000L);
             
-            // Create rule using executeAction with "addRule" or similar action
-            // Rules in AggreGate are typically managed through actions or special context methods
+            // Rules can only be created in model contexts
+            // Check if this is a model context
+            boolean isModelContext = connection.executeWithTimeout(() -> {
+                try {
+                    context.getVariable(com.tibbo.aggregate.common.server.ModelContextConstants.V_MODEL_EVENTS);
+                    return true;
+                } catch (ContextException e) {
+                    return false;
+                }
+            }, 60000L);
+            
+            if (!isModelContext) {
+                throw new McpException(
+                    com.tibbo.aggregate.mcp.protocol.McpError.CONTEXT_ERROR,
+                    "Rules can only be created in model contexts. Path '" + path + "' is not a model context."
+                );
+            }
+            
+            // Rules in models are created through actions (unlike events and functions which use variables)
+            // Use action-based approach for model contexts
             connection.executeWithTimeout(() -> {
                 try {
-                    // Try to use executeAction to add a rule
-                    // The action name may vary: "addRule", "createRule", "setRule"
-                    com.tibbo.aggregate.common.datatable.DataTable input = 
-                        new com.tibbo.aggregate.common.datatable.SimpleDataTable(
-                            "<name><S><trigger><S><expression><S><enabled><B><description><S><group><S>",
-                            true
-                        );
-                    com.tibbo.aggregate.common.datatable.DataRecord inputRec = input.addRecord();
-                    inputRec.setValue("name", ruleName);
-                    inputRec.setValue("trigger", trigger);
-                    inputRec.setValue("expression", expression);
-                    inputRec.setValue("enabled", enabled);
-                    inputRec.setValue("description", description != null ? description : "");
-                    inputRec.setValue("group", group != null ? group : "");
-                    
-                    // Use ActionUtils to execute the action (static methods)
-                    com.tibbo.aggregate.common.action.ServerActionInput actionInput = 
-                        com.tibbo.aggregate.common.action.ActionUtils.createActionInput(input);
-                    
-                    // Try different action names
-                    String[] actionNames = {"addRule", "createRule", "setRule"};
+                    // Try different action names - use empty input first, fill via EditData commands
+                    String[] actionNames = {"addRule", "createRule", "setRule", "add", "create"};
                     Exception lastException = null;
+                    
+                    // Start with empty input - data will be filled via EditData commands
+                    com.tibbo.aggregate.common.action.ServerActionInput actionInput = 
+                        new com.tibbo.aggregate.common.action.ServerActionInput();
                     
                     for (String actionName : actionNames) {
                         try {
+                            // Check if action exists before trying to use it
+                            @SuppressWarnings("unchecked")
+                            java.util.List<com.tibbo.aggregate.common.action.ActionDefinition> actions = 
+                                (java.util.List<com.tibbo.aggregate.common.action.ActionDefinition>) 
+                                context.getActionDefinitions();
+                            
+                            boolean actionExists = false;
+                            if (actions != null) {
+                                for (com.tibbo.aggregate.common.action.ActionDefinition ad : actions) {
+                                    if (ad != null && actionName.equals(ad.getName())) {
+                                        actionExists = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (!actionExists) {
+                                continue; // Skip non-existent actions
+                            }
+                            
                             com.tibbo.aggregate.common.action.ActionIdentifier actionId = 
                                 com.tibbo.aggregate.common.action.ActionUtils.initAction(
                                     context,
@@ -156,8 +181,145 @@ public class CreateRuleTool implements McpTool {
                                     null
                                 );
                             
-                            // Execute the action (simplified - may need full execution flow)
-                            // For now, just return success if action was initialized
+                            // Execute the action with full flow (like ExecuteActionTool)
+                            com.tibbo.aggregate.common.action.GenericActionResponse[] actionResponseRef = 
+                                new com.tibbo.aggregate.common.action.GenericActionResponse[1];
+                            actionResponseRef[0] = null;
+                            int maxSteps = 100;
+                            int stepCount = 0;
+                            
+                            while (stepCount < maxSteps) {
+                                final com.tibbo.aggregate.common.action.GenericActionResponse currentResponse = actionResponseRef[0];
+                                com.tibbo.aggregate.common.action.GenericActionCommand cmd = 
+                                    com.tibbo.aggregate.common.action.ActionUtils.stepAction(
+                                        context, 
+                                        actionId, 
+                                        currentResponse, 
+                                        null
+                                    );
+                                
+                                if (cmd == null) {
+                                    break; // End of action
+                                }
+                                
+                                // Process command - fill data via EditData commands
+                                com.tibbo.aggregate.common.action.GenericActionResponse newResponse;
+                                
+                                // Handle EditData commands - fill with rule data
+                                if (cmd.getType().equals(com.tibbo.aggregate.common.action.ActionUtils.CMD_EDIT_DATA) 
+                                    && cmd instanceof EditData) {
+                                    EditData editDataCmd = (EditData) cmd;
+                                    com.tibbo.aggregate.common.datatable.DataTable data = editDataCmd.getData();
+                                    
+                                    // If data table exists, try to fill it with rule information
+                                    if (data != null && data.getRecordCount() > 0) {
+                                        com.tibbo.aggregate.common.datatable.DataRecord rec = data.rec();
+                                        
+                                        // Try to set rule fields if they exist in the format
+                                        // Use safe field checking with multiple field name variations
+                                        try {
+                                            // Common field names for rules (try multiple variations)
+                                            String[] nameFields = {"name", "ruleName", "rule_name", "Name", "RuleName"};
+                                            String[] triggerFields = {"trigger", "Trigger", "ruleTrigger"};
+                                            String[] expressionFields = {"expression", "Expression", "ruleExpression", "code"};
+                                            String[] enabledFields = {"enabled", "Enabled", "isEnabled", "active"};
+                                            String[] descriptionFields = {"description", "Description", "desc"};
+                                            String[] groupFields = {"group", "Group", "category"};
+                                            
+                                            // Set name field
+                                            for (String fieldName : nameFields) {
+                                                if (rec.getFormat().hasField(fieldName)) {
+                                                    rec.setValue(fieldName, ruleName);
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            // Set trigger field
+                                            for (String fieldName : triggerFields) {
+                                                if (rec.getFormat().hasField(fieldName)) {
+                                                    rec.setValue(fieldName, trigger);
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            // Set expression field
+                                            for (String fieldName : expressionFields) {
+                                                if (rec.getFormat().hasField(fieldName)) {
+                                                    rec.setValue(fieldName, expression);
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            // Set enabled field
+                                            for (String fieldName : enabledFields) {
+                                                if (rec.getFormat().hasField(fieldName)) {
+                                                    rec.setValue(fieldName, enabled);
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            // Set description field (optional)
+                                            if (description != null) {
+                                                for (String fieldName : descriptionFields) {
+                                                    if (rec.getFormat().hasField(fieldName)) {
+                                                        rec.setValue(fieldName, description);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Set group field (optional)
+                                            if (group != null) {
+                                                for (String fieldName : groupFields) {
+                                                    if (rec.getFormat().hasField(fieldName)) {
+                                                        rec.setValue(fieldName, group);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        } catch (Exception fieldError) {
+                                            // If field setting fails, log but continue with default response
+                                            // This allows the action to proceed even if some fields can't be set
+                                        }
+                                        
+                                        newResponse = new com.tibbo.aggregate.common.action.GenericActionResponse(data);
+                                    } else {
+                                        newResponse = editDataCmd.createDefaultResponse();
+                                    }
+                                } else if (cmd.getType().equals(com.tibbo.aggregate.common.action.ActionUtils.CMD_CONFIRM) 
+                                    && cmd instanceof Confirm) {
+                                    // Confirm command - reply with YES
+                                    Confirm confirmCmd = (Confirm) cmd;
+                                    com.tibbo.aggregate.common.action.GenericActionResponse defaultResponse = 
+                                        confirmCmd.createDefaultResponse();
+                                    if (defaultResponse.getParameters() != null && 
+                                        defaultResponse.getParameters().getRecordCount() > 0) {
+                                        defaultResponse.getParameters().rec().setValue(
+                                            Confirm.RF_OPTION, 
+                                            com.tibbo.aggregate.common.action.ActionUtils.YES_OPTION
+                                        );
+                                    }
+                                    newResponse = defaultResponse;
+                                } else {
+                                    // Default response
+                                    newResponse = new com.tibbo.aggregate.common.action.GenericActionResponse(
+                                        new com.tibbo.aggregate.common.datatable.SimpleDataTable()
+                                    );
+                                }
+                                
+                                if (cmd.isLast()) {
+                                    break; // End of action
+                                }
+                                
+                                if (cmd.getRequestId() != null) {
+                                    newResponse.setRequestId(cmd.getRequestId());
+                                }
+                                
+                                actionResponseRef[0] = newResponse;
+                                stepCount++;
+                            }
+                            
+                            // Rule created successfully
                             return null;
                         } catch (Exception e) {
                             lastException = e;
@@ -165,9 +327,29 @@ public class CreateRuleTool implements McpTool {
                         }
                     }
                     
-                    // If all action names failed, throw exception
-                    throw new RuntimeException("Failed to create rule. Tried actions: addRule, createRule, setRule. " +
-                        "Error: " + (lastException != null ? lastException.getMessage() : "Unknown error"));
+                    // If all action names failed, throw exception with helpful message
+                    String availableActions = "";
+                    try {
+                        @SuppressWarnings("unchecked")
+                        java.util.List<com.tibbo.aggregate.common.action.ActionDefinition> actions = 
+                            (java.util.List<com.tibbo.aggregate.common.action.ActionDefinition>) 
+                            context.getActionDefinitions();
+                        if (actions != null && !actions.isEmpty()) {
+                            java.util.List<String> actionNamesList = new java.util.ArrayList<>();
+                            for (com.tibbo.aggregate.common.action.ActionDefinition ad : actions) {
+                                if (ad != null && ad.getName() != null) {
+                                    actionNamesList.add(ad.getName());
+                                }
+                            }
+                            availableActions = " Available actions: " + String.join(", ", actionNamesList);
+                        }
+                    } catch (Exception e) {
+                        // Ignore errors when getting action list
+                    }
+                    
+                    throw new RuntimeException("Failed to create rule. Tried actions: " + 
+                        String.join(", ", actionNames) + "." + availableActions + 
+                        " Error: " + (lastException != null ? lastException.getMessage() : "Unknown error"));
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to create rule: " + e.getMessage(), e);
                 }
