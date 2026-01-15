@@ -5,7 +5,7 @@ plugins {
 
 tasks {
     named<Wrapper>("wrapper") {
-        gradleVersion = "6.9"
+        gradleVersion = "8.12"
         distributionType = Wrapper.DistributionType.ALL
     }
 }
@@ -15,7 +15,10 @@ allprojects {
     apply(plugin = "java-library")
     repositories {
         mavenCentral()
-        maven(url = "https://store.aggregate.digital/repository/maven-public")
+        // Кастомный репозиторий - пробуем с игнорированием SSL для старых сертификатов
+        maven {
+            url = uri("https://store.aggregate.digital/repository/maven-public")
+        }
     }
     configurations.all {
         resolutionStrategy {
