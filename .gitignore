@@ -1,9 +1,7 @@
 # Gradle
 .gradle/
-build/
+# build/ - отслеживается в Git
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 # IntelliJ IDEA
 .idea/
@@ -34,17 +32,22 @@ logs/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
 
 # Compiled class files
 *.class
 
 # Package Files
-*.jar
+# *.jar - отслеживается в Git (libs/)
 *.war
 *.nar
 *.ear
-*.zip
+# *.zip - отслеживается в Git (если нужно)
 *.tar.gz
 *.rar
 
@@ -64,8 +67,19 @@ buildNumber.properties
 *.tmp
 *.temp
 *.swp
+*.swo
 *~
 .err.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+*.egg
 
 # Documentation build
 docs/_build/
@@ -73,4 +87,3 @@ docs/_build/
 # Migration documentation (keep for reference)
 # MIGRATION_*.md
 # DELETE_*.md
-

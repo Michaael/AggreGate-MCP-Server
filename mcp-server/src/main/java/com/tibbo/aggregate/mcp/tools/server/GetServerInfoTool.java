@@ -63,6 +63,15 @@ public class GetServerInfoTool implements McpTool {
                         try {
                             return root.callFunction("getServerVersion");
                         } catch (Exception e) {
+                            // Try alternative: check if function exists first
+                            try {
+                                java.util.List<String> functions = root.getFunctionNames();
+                                if (functions != null && functions.contains("getServerVersion")) {
+                                    return root.callFunction("getServerVersion", null);
+                                }
+                            } catch (Exception e2) {
+                                // Ignore
+                            }
                             return null;
                         }
                     }, 60000);
@@ -75,9 +84,13 @@ public class GetServerInfoTool implements McpTool {
                     if (rec.hasField("build")) {
                         result.put("build", rec.getString("build"));
                     }
+                    if (rec.hasField("buildNumber")) {
+                        result.put("buildNumber", rec.getString("buildNumber"));
+                    }
                 }
             } catch (Exception e) {
-                // Version info not available
+                // Version info not available - will be omitted from result
+                // Note: getServerVersion function may not be available in all server versions
             }
             
             // Get connection info
